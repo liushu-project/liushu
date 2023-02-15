@@ -27,7 +27,7 @@ struct DictItem {
     text: String,
     code: String,
     weight: u64,
-    stem: String,
+    stem: Option<String>,
     comment: Option<String>,
 }
 
@@ -45,7 +45,8 @@ fn main() {
 
 fn query_code(code: String) -> Result<Vec<String>> {
     let conn = Connection::open("./sunman.db3")?;
-    let mut stmt = conn.prepare("SELECT text FROM sunman WHERE code LIKE ? ORDER BY weight DESC")?;
+    let mut stmt =
+        conn.prepare("SELECT text FROM sunman WHERE code LIKE ? ORDER BY weight DESC")?;
 
     let mut query_code = code;
     query_code.push('%');
@@ -67,7 +68,7 @@ fn compile_dict() -> Result<()> {
             text TEXT NOT NULL,
             code TEXT NOT NULL,
             weight INTEGER NOT NULL,
-            stem TEXT NOT NULL,
+            stem TEXT,
             comment TEXT
         )",
         (),
