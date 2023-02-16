@@ -18,7 +18,11 @@ enum Commands {
 
     #[command(arg_required_else_help = true)]
     Query {
+        #[arg(long)]
         code: String,
+
+        #[arg(long)]
+        page: u32,
     },
 }
 
@@ -36,21 +40,22 @@ fn main() {
 
     match args.command {
         Commands::Compile => compile_dict().expect("compile error"),
-        Commands::Query { code } => {
-            let result = query_code(code).unwrap_or(vec![]);
+        Commands::Query { code, page } => {
+            let result = query_code(code, page).unwrap_or(vec![]);
             println!("{:?}", result);
         }
     };
 }
 
-fn query_code(code: String) -> Result<Vec<String>> {
+fn query_code(mut code: String, page: u32) -> Result<Vec<String>> {
     let conn = Connection::open("./sunman.db3")?;
-    let mut stmt =
-        conn.prepare("SELECT text FROM sunman WHERE code LIKE ? ORDER BY weight DESC")?;
+    let mut stmt = conn.prepare(
+        "SELECT text FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC Limit 9 OFFSET ?2",
+    )?;
 
-    let mut query_code = code;
-    query_code.push('%');
-    let rows = stmt.query_map(params![query_code], |row| row.get("text"))?;
+    code.push('%');
+    let offset = (page - 1) * 9;
+    let rows = stmt.query_map(params![code, offset], |row| row.get("text"))?;
 
     let mut result = Vec::new();
     for text_result in rows {
