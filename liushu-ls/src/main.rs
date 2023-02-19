@@ -4,6 +4,13 @@ use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
 
+macro_rules! regex {
+    ($re:literal $(,)?) => {{
+        static RE: once_cell::sync::OnceCell<regex::Regex> = once_cell::sync::OnceCell::new();
+        RE.get_or_init(|| regex::Regex::new($re).unwrap())
+    }};
+}
+
 #[derive(Debug)]
 struct Backend {
     client: Client,
@@ -81,15 +88,20 @@ impl LanguageServer for Backend {
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
         if let Some(new_input) = params.content_changes.get(0) {
+            let re = regex!(r"[a-z]+");
             let mut input_writer = self.input.write().await;
 
-            if input_writer.contains(" ") {
-                *input_writer = "".to_string();
-            }
-
-            if new_input.text.is_ascii() {
-                (*input_writer).push_str(&new_input.text);
-            }
+            match (re.is_match(&input_writer), re.is_match(&new_input.text)) {
+                (true, true) => {
+                    (*input_writer).push_str(&new_input.text);
+                }
+                (false, true) => {
+                    *input_writer = new_input.text.clone();
+                }
+                (_, false) => {
+                    *input_writer = "".to_string();
+                }
+            };
         }
     }
 }
