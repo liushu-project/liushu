@@ -72,8 +72,10 @@ impl LanguageServer for Backend {
                             items: list
                                 .iter()
                                 .map(move |result| CompletionItem {
-                                    label: input_.to_string(),
+                                    label: result.to_string(),
                                     detail: Some(result.to_string()),
+                                    sort_text: Some(input_.to_string()),
+                                    filter_text: Some(input_.to_string()),
                                     insert_text: Some(result.to_string()),
                                     kind: Some(CompletionItemKind::TEXT),
                                     ..Default::default()
