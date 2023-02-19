@@ -1,8 +1,11 @@
+use std::fs::create_dir;
 use std::io;
 
 use anyhow::Result;
 use rusqlite::{params, Connection};
 use serde::Deserialize;
+
+use crate::dirs;
 
 #[derive(Debug, Deserialize)]
 struct DictItem {
@@ -14,7 +17,8 @@ struct DictItem {
 }
 
 pub fn query_code(mut code: String, page: u32) -> Result<Vec<String>> {
-    let conn = Connection::open("./sunman.db3")?;
+    let db_path = dirs::get_proj_dirs().data_dir().join("sunman.db3");
+    let conn = Connection::open(db_path)?;
     let mut stmt = conn.prepare(
         "SELECT text FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC Limit 9 OFFSET ?2",
     )?;
@@ -32,7 +36,12 @@ pub fn query_code(mut code: String, page: u32) -> Result<Vec<String>> {
 }
 
 pub fn compile_dict() -> Result<()> {
-    let mut conn = Connection::open("./sunman.db3")?;
+    let data_dir = &dirs::get_proj_dirs().data_dir().to_owned();
+    if !data_dir.exists() {
+        create_dir(data_dir)?;
+    }
+    let db_path = data_dir.join("sunman.db3");
+    let mut conn = Connection::open(db_path)?;
     conn.execute(
         "CREATE TABLE sunman (
             id INTEGER PRIMARY KEY,
