@@ -13,4 +13,5 @@ liushu-core = { path = "liushu-core" }
 [workspace]
 members = [
     "liushu-core",
+    "liushu-ls",
 ]
