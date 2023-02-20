@@ -448,6 +448,7 @@ dependencies = [
  "anyhow",
  "csv",
  "directories",
+ "once_cell",
  "rusqlite",
  "serde",
 ]
