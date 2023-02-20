@@ -1,4 +1,4 @@
-use liushu_core::dict::query_code;
+use liushu_core::dict::SearchEngine;
 use tokio::sync::RwLock;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
@@ -64,8 +64,10 @@ impl LanguageServer for Backend {
             Ok(None)
         } else {
             let input_ = &input.clone();
+            let engine = SearchEngine::new();
             Ok(Some(
-                query_code(input, 1)
+                engine
+                    .search(input, 1)
                     .map(|list| {
                         CompletionResponse::List(CompletionList {
                             is_incomplete: false,

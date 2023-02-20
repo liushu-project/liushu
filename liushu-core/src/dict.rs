@@ -16,24 +16,36 @@ struct DictItem {
     comment: Option<String>,
 }
 
-pub fn query_code(mut code: String, page: u32) -> Result<Vec<String>> {
-    let data_dir = &PROJECT_DIRS.data_dir;
-    let db_path = data_dir.join("sunman.db3");
-    let conn = Connection::open(db_path)?;
-    let mut stmt = conn.prepare(
-        "SELECT text FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC Limit 9 OFFSET ?2",
-    )?;
+pub struct SearchEngine {
+    conn: Connection,
+}
 
-    code.push('%');
-    let offset = (page - 1) * 9;
-    let rows = stmt.query_map(params![code, offset], |row| row.get("text"))?;
+impl SearchEngine {
+    pub fn new() -> Self {
+        let data_dir = &PROJECT_DIRS.data_dir;
+        let db_path = data_dir.join("sunman.db3");
 
-    let mut result = Vec::new();
-    for text_result in rows {
-        result.push(text_result?);
+        Self {
+            conn: Connection::open(db_path).unwrap(),
+        }
     }
 
-    Ok(result)
+    pub fn search(&self, mut code: String, page: u32) -> Result<Vec<String>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT text FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC Limit 9 OFFSET ?2",
+        )?;
+
+        code.push('%');
+        let offset = (page - 1) * 9;
+        let rows = stmt.query_map(params![code, offset], |row| row.get("text"))?;
+
+        let mut result = Vec::new();
+        for text_result in rows {
+            result.push(text_result?);
+        }
+
+        Ok(result)
+    }
 }
 
 pub fn compile_dict() -> Result<()> {

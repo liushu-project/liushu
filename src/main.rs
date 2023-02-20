@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use liushu_core::dict::{compile_dict, query_code};
+use liushu_core::dict::{compile_dict, SearchEngine};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -28,7 +28,8 @@ fn main() {
     match args.command {
         Commands::Compile => compile_dict().expect("compile error"),
         Commands::Query { code, page } => {
-            let result = query_code(code, page).unwrap_or(vec![]);
+            let engine = SearchEngine::new();
+            let result = engine.search(code, page).unwrap_or(vec![]);
             println!("{:?}", result);
         }
     };
