@@ -65,7 +65,7 @@ impl LanguageServer for Backend {
         }
 
         let engine = SearchEngine::new();
-        match engine.search2(input) {
+        match engine.search(input) {
             Ok(list) => {
                 let completion_resp = CompletionResponse::List(CompletionList {
                     is_incomplete: false,

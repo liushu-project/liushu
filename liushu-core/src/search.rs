@@ -17,24 +17,7 @@ impl SearchEngine {
         }
     }
 
-    pub fn search(&self, mut code: String, page: u32) -> Result<Vec<String>> {
-        let mut stmt = self.conn.prepare_cached(
-            "SELECT text FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC Limit 9 OFFSET ?2",
-        )?;
-
-        code.push('%');
-        let offset = (page - 1) * 9;
-        let rows = stmt.query_map(params![code, offset], |row| row.get("text"))?;
-
-        let mut result = Vec::new();
-        for text_result in rows {
-            result.push(text_result?);
-        }
-
-        Ok(result)
-    }
-
-    pub fn search2(&self, mut code: String) -> Result<Vec<SearchResultItem>> {
+    pub fn search(&self, mut code: String) -> Result<Vec<SearchResultItem>> {
         let mut stmt = self.conn.prepare_cached(
             "SELECT * FROM (SELECT * FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC) GROUP BY text",
         )?;

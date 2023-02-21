@@ -26,7 +26,7 @@ fn main() {
         Commands::Compile => compile_dict().expect("compile error"),
         Commands::Query { code } => {
             let engine = SearchEngine::new();
-            let result = engine.search2(code).unwrap();
+            let result = engine.search(code).unwrap();
             println!("{:?}", result);
         }
     };
