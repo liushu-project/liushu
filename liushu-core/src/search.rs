@@ -35,9 +35,9 @@ impl SearchEngine {
     }
 
     pub fn search2(&self, mut code: String) -> Result<Vec<SearchResultItem>> {
-        let mut stmt = self
-            .conn
-            .prepare_cached("SELECT * FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC")?;
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT * FROM (SELECT * FROM sunman WHERE code LIKE ?1 ORDER BY weight DESC) GROUP BY text",
+        )?;
 
         code.push('%');
         let rows = stmt.query_map(params![code], |row| SearchResultItem::try_from(row))?;
