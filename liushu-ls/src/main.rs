@@ -61,32 +61,37 @@ impl LanguageServer for Backend {
             .await;
 
         if input.is_empty() {
-            Ok(None)
-        } else {
-            let input_ = &input.clone();
-            let engine = SearchEngine::new();
-            Ok(Some(
-                engine
-                    .search(input, 1)
-                    .map(|list| {
-                        CompletionResponse::List(CompletionList {
-                            is_incomplete: false,
-                            items: list
-                                .iter()
-                                .map(move |result| CompletionItem {
-                                    label: result.to_string(),
-                                    detail: Some(result.to_string()),
-                                    sort_text: Some(input_.to_string()),
-                                    filter_text: Some(input_.to_string()),
-                                    insert_text: Some(result.to_string()),
-                                    kind: Some(CompletionItemKind::TEXT),
-                                    ..Default::default()
-                                })
-                                .collect(),
+            return Ok(None);
+        }
+
+        let engine = SearchEngine::new();
+        match engine.search2(input) {
+            Ok(list) => {
+                let completion_resp = CompletionResponse::List(CompletionList {
+                    is_incomplete: false,
+                    items: list
+                        .iter()
+                        .map(|item| {
+                            let label = format!(
+                                "{} {}",
+                                item.text,
+                                item.comment.clone().unwrap_or(item.code.clone())
+                            );
+
+                            CompletionItem {
+                                label,
+                                sort_text: Some(item.code.clone()),
+                                filter_text: Some(item.code.clone()),
+                                insert_text: Some(item.text.clone()),
+                                kind: Some(CompletionItemKind::TEXT),
+                                ..Default::default()
+                            }
                         })
-                    })
-                    .unwrap(),
-            ))
+                        .collect(),
+                });
+                Ok(Some(completion_resp))
+            }
+            Err(_) => Ok(None),
         }
     }
 
