@@ -1,4 +1,4 @@
-use liushu_core::dict::SearchEngine;
+use liushu_core::search::SearchEngine;
 use tokio::sync::RwLock;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
