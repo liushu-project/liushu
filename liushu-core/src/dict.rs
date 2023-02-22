@@ -30,7 +30,8 @@ pub fn compile_dict() -> Result<()> {
             code TEXT NOT NULL,
             weight INTEGER NOT NULL,
             stem TEXT,
-            comment TEXT
+            comment TEXT,
+            UNIQUE(text, code)
         )",
         (),
     )?;
