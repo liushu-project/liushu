@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use liushu_core::deploy::deploy;
 use liushu_core::dict::compile_dict;
 use liushu_core::search::SearchEngine;
 
@@ -11,6 +12,7 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
+    Deploy,
     Compile,
 
     #[command(arg_required_else_help = true)]
@@ -23,6 +25,9 @@ fn main() {
     let args = Cli::parse();
 
     match args.command {
+        Commands::Deploy => {
+            deploy();
+        }
         Commands::Compile => compile_dict().expect("compile error"),
         Commands::Query { code } => {
             let engine = SearchEngine::new();

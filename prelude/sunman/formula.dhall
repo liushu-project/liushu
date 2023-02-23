@@ -1,0 +1,4 @@
+{
+  id = "sunman",
+  dictionary = "words",
+}

@@ -8,12 +8,12 @@ use serde::Deserialize;
 use crate::dirs::PROJECT_DIRS;
 
 #[derive(Debug, Deserialize)]
-struct DictItem {
-    text: String,
-    code: String,
-    weight: u64,
-    stem: Option<String>,
-    comment: Option<String>,
+pub struct DictItem {
+    pub text: String,
+    pub code: String,
+    pub weight: u64,
+    pub stem: Option<String>,
+    pub comment: Option<String>,
 }
 
 pub fn compile_dict() -> Result<()> {
