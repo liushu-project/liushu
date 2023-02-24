@@ -1,3 +1,6 @@
 /target
 
 *.db3
+
+.envrc
+.direnv/
