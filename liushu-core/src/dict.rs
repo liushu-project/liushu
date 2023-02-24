@@ -1,12 +1,8 @@
-use std::fs::create_dir;
-use std::io;
 use std::path::Path;
 
 use anyhow::Result;
 use rusqlite::{params, Connection};
 use serde::Deserialize;
-
-use crate::dirs::PROJECT_DIRS;
 
 #[derive(Debug, Deserialize)]
 pub struct DictItem {
