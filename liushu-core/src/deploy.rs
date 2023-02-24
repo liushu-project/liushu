@@ -1,11 +1,11 @@
-use crate::{config::Config, dirs::PROJECT_DIRS};
+use crate::{config::Config, dict::compile_dict_to_db};
 
 pub fn deploy() {
-    let targe_dir = &PROJECT_DIRS.target_dir;
     let config = Config::load();
 
     for formula in config.formulas {
-        let dict_db_path = targe_dir.join(formula.get_db_path());
-        formula.compile_dict_to(dict_db_path).unwrap();
+        let db_path = formula.get_db_path();
+        let dict_path = formula.get_dict_path();
+        compile_dict_to_db(dict_path, db_path).unwrap();
     }
 }

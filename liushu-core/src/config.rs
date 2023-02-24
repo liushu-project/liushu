@@ -1,10 +1,7 @@
 use std::path::{Path, PathBuf};
 
-use anyhow::Result;
-use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 
-use crate::dict::DictItem;
 use crate::dirs::PROJECT_DIRS;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,43 +21,17 @@ impl Config {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Formula {
-    pub id: String,
+    id: String,
     dictionary: String,
 }
 
 impl Formula {
-    pub fn compile_dict_to<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-        let mut conn = Connection::open(path)?;
-        conn.execute(
-            "CREATE TABLE dict (
-                id INTEGER PRIMARY KEY,
-                text TEXT NOT NULL,
-                code TEXT NOT NULL,
-                weight INTEGER NOT NULL,
-                stem TEXT,
-                comment TEXT,
-                UNIQUE(text, code)
-            )",
-            (),
-        )?;
-        let tx = conn.transaction()?;
-        let mut rdr = csv::Reader::from_path(self.get_dict_path())?;
-        for result in rdr.deserialize() {
-            let dict: DictItem = result?;
-            tx.execute(
-                "INSERT INTO dict (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
-                params![dict.text, dict.code, dict.weight, dict.stem, dict.comment],
-            )?;
-        }
-        tx.commit()?;
-        Ok(())
-    }
-
     pub fn get_db_path(&self) -> PathBuf {
-        PathBuf::from(format!("{}.db3", self.id))
+        let targe_dir = &PROJECT_DIRS.target_dir;
+        targe_dir.join(format!("{}.db3", self.id))
     }
 
-    fn get_dict_path(&self) -> PathBuf {
+    pub fn get_dict_path(&self) -> PathBuf {
         let config_dir = &PROJECT_DIRS.config_dir;
         config_dir
             .join(&self.id)
@@ -84,9 +55,6 @@ mod tests {
         assert!(config.formulas[0]
             .get_dict_path()
             .ends_with("sunman/words.dict.csv"));
-        assert_eq!(
-            config.formulas[0].get_db_path(),
-            PathBuf::from("sunman.db3")
-        );
+        assert!(config.formulas[0].get_db_path().ends_with("sunman.db3"));
     }
 }
