@@ -14,7 +14,7 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Self {
-        Self::load_from_path(&PROJECT_DIRS.config_dir)
+        Self::load_from_path(&PROJECT_DIRS.config_dir.join("main.dhall"))
     }
 
     fn load_from_path<P: AsRef<Path>>(path: P) -> Self {
@@ -32,18 +32,15 @@ impl Formula {
     pub fn compile_dict_to<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let mut conn = Connection::open(path)?;
         conn.execute(
-            &format!(
-                "CREATE TABLE {} (
-                    id INTEGER PRIMARY KEY,
-                    text TEXT NOT NULL,
-                    code TEXT NOT NULL,
-                    weight INTEGER NOT NULL,
-                    stem TEXT,
-                    comment TEXT,
-                    UNIQUE(text, code)
-                )",
-                self.id
-            ),
+            "CREATE TABLE dict (
+                id INTEGER PRIMARY KEY,
+                text TEXT NOT NULL,
+                code TEXT NOT NULL,
+                weight INTEGER NOT NULL,
+                stem TEXT,
+                comment TEXT,
+                UNIQUE(text, code)
+            )",
             (),
         )?;
         let tx = conn.transaction()?;
@@ -51,16 +48,23 @@ impl Formula {
         for result in rdr.deserialize() {
             let dict: DictItem = result?;
             tx.execute(
-            "INSERT INTO sunman (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![dict.text, dict.code, dict.weight, dict.stem, dict.comment],
-        )?;
+                "INSERT INTO dict (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![dict.text, dict.code, dict.weight, dict.stem, dict.comment],
+            )?;
         }
         tx.commit()?;
         Ok(())
     }
 
+    pub fn get_db_path(&self) -> PathBuf {
+        PathBuf::from(format!("{}.db3", self.id))
+    }
+
     fn get_dict_path(&self) -> PathBuf {
-        PathBuf::from(&self.id).join(format!("{}.dict.csv", self.dictionary))
+        let config_dir = &PROJECT_DIRS.config_dir;
+        config_dir
+            .join(&self.id)
+            .join(format!("{}.dict.csv", self.dictionary))
     }
 }
 
@@ -77,9 +81,12 @@ mod tests {
         assert_eq!(config.formulas[0].id, String::from("sunman"));
         assert_eq!(config.formulas[0].dictionary, String::from("words"));
 
+        assert!(config.formulas[0]
+            .get_dict_path()
+            .ends_with("sunman/words.dict.csv"));
         assert_eq!(
-            config.formulas[0].get_dict_path(),
-            PathBuf::from("sunman/words.dict.csv")
+            config.formulas[0].get_db_path(),
+            PathBuf::from("sunman.db3")
         );
     }
 }
