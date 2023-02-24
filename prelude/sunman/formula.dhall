@@ -1,4 +1,1 @@
-{
-  id = "sunman",
-  dictionary = "words",
-}
+{ id = "sunman", dictionary = "words" }
