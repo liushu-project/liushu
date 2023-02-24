@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use liushu_core::deploy::deploy;
-use liushu_core::dict::compile_dict;
+use liushu_core::dict::compile_dict_to_db;
 use liushu_core::search::SearchEngine;
 
 #[derive(Parser, Debug)]
@@ -13,7 +13,12 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Commands {
     Deploy,
-    Compile,
+
+    #[command(arg_required_else_help = true)]
+    Compile {
+        dict: String,
+        target: String,
+    },
 
     #[command(arg_required_else_help = true)]
     Query {
@@ -28,11 +33,22 @@ fn main() {
         Commands::Deploy => {
             deploy();
         }
-        Commands::Compile => compile_dict().expect("compile error"),
+        Commands::Compile { dict, target } => compile_dict_to_db(dict, target).unwrap(),
         Commands::Query { code } => {
             let engine = SearchEngine::new();
             let result = engine.search(code).unwrap();
             println!("{:?}", result);
         }
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Cli;
+    use clap::CommandFactory;
+
+    #[test]
+    fn verify_cli() {
+        Cli::command().debug_assert()
+    }
 }

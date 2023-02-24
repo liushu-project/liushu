@@ -17,38 +17,6 @@ pub struct DictItem {
     pub comment: Option<String>,
 }
 
-pub fn compile_dict() -> Result<()> {
-    let data_dir = &PROJECT_DIRS.data_dir;
-    if !data_dir.exists() {
-        create_dir(data_dir)?;
-    }
-    let db_path = data_dir.join("sunman.db3");
-    let mut conn = Connection::open(db_path)?;
-    conn.execute(
-        "CREATE TABLE sunman (
-            id INTEGER PRIMARY KEY,
-            text TEXT NOT NULL,
-            code TEXT NOT NULL,
-            weight INTEGER NOT NULL,
-            stem TEXT,
-            comment TEXT,
-            UNIQUE(text, code)
-        )",
-        (),
-    )?;
-    let tx = conn.transaction()?;
-    let mut rdr = csv::Reader::from_reader(io::stdin());
-    for result in rdr.deserialize() {
-        let dict: DictItem = result?;
-        tx.execute(
-            "INSERT INTO sunman (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![dict.text, dict.code, dict.weight, dict.stem, dict.comment],
-        )?;
-    }
-    tx.commit()?;
-    Ok(())
-}
-
 pub fn compile_dict_to_db<P: AsRef<Path>>(dict_path: P, db_path: P) -> Result<()> {
     let mut conn = Connection::open(db_path)?;
     conn.execute(
