@@ -1,0 +1,33 @@
+name: "Test & Lint & Format"
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+jobs:
+  test-workspace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: rust test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace
+
+      - name: rust lint
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+      - name: rust format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
