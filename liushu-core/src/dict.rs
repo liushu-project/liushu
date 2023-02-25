@@ -39,3 +39,32 @@ pub fn compile_dict_to_db<P: AsRef<Path>>(dict_path: P, db_path: P) -> Result<()
     tx.commit()?;
     Ok(())
 }
+
+pub fn compile_dicts_to_db<P: AsRef<Path>>(dict_paths: Vec<P>, db_path: P) -> Result<()> {
+    let mut conn = Connection::open(db_path)?;
+    conn.execute(
+        "CREATE TABLE dict (
+                id INTEGER PRIMARY KEY,
+                text TEXT NOT NULL,
+                code TEXT NOT NULL,
+                weight INTEGER NOT NULL,
+                stem TEXT,
+                comment TEXT,
+                UNIQUE(text, code)
+            )",
+        (),
+    )?;
+    let tx = conn.transaction()?;
+    for dict_path in dict_paths {
+        let mut rdr = csv::Reader::from_path(dict_path)?;
+        for result in rdr.deserialize() {
+            let dict: DictItem = result?;
+            tx.execute(
+                "INSERT INTO dict (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![dict.text, dict.code, dict.weight, dict.stem, dict.comment],
+            )?;
+        }
+    }
+    tx.commit()?;
+    Ok(())
+}

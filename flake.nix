@@ -21,6 +21,7 @@
           buildInputs = [
             openssl
             pkg-config
+            dhall
             (rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" ];
             })

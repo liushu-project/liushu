@@ -1,10 +1,11 @@
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
+use serde_dhall::StaticType;
 
 use crate::dirs::PROJECT_DIRS;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, StaticType)]
 pub struct Config {
     pub formulas: Vec<Formula>,
 }
@@ -15,14 +16,18 @@ impl Config {
     }
 
     fn load_from_path<P: AsRef<Path>>(path: P) -> Self {
-        serde_dhall::from_file(path).parse().unwrap()
+        serde_dhall::from_file(path)
+            .static_type_annotation()
+            .parse()
+            .unwrap()
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, StaticType)]
 pub struct Formula {
     id: String,
-    dictionary: String,
+    name: Option<String>,
+    dictionaries: Vec<String>,
 }
 
 impl Formula {
@@ -31,11 +36,12 @@ impl Formula {
         targe_dir.join(format!("{}.db3", self.id))
     }
 
-    pub fn get_dict_path(&self) -> PathBuf {
+    pub fn get_dict_paths(&self) -> Vec<PathBuf> {
         let config_dir = &PROJECT_DIRS.config_dir;
-        config_dir
-            .join(&self.id)
-            .join(format!("{}.dict.csv", self.dictionary))
+        self.dictionaries
+            .iter()
+            .map(|dict| config_dir.join(&self.id).join(dict))
+            .collect()
     }
 }
 
@@ -43,18 +49,27 @@ impl Formula {
 mod tests {
     use super::*;
 
+    impl Clone for Formula {
+        fn clone(&self) -> Self {
+            Self {
+                id: self.id.clone(),
+                name: self.name.clone(),
+                dictionaries: self.dictionaries.clone(),
+            }
+        }
+    }
+
     #[test]
     fn test_prelude() {
         let config = Config::load_from_path("../prelude/main.dhall");
 
         assert_eq!(config.formulas.len(), 1);
 
-        assert_eq!(config.formulas[0].id, String::from("sunman"));
-        assert_eq!(config.formulas[0].dictionary, String::from("words"));
+        let sunman = config.formulas[0].clone();
+        assert_eq!(sunman.id, String::from("sunman"));
+        assert_eq!(sunman.name, Some(String::from("山人全息")));
 
-        assert!(config.formulas[0]
-            .get_dict_path()
-            .ends_with("sunman/words.dict.csv"));
-        assert!(config.formulas[0].get_db_path().ends_with("sunman.db3"));
+        assert_eq!(sunman.dictionaries.len(), 3);
+        assert!(sunman.get_db_path().ends_with("sunman.db3"));
     }
 }
