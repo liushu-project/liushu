@@ -12,7 +12,7 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Self {
-        Self::load_from_path(&PROJECT_DIRS.config_dir.join("main.dhall"))
+        Self::load_from_path(PROJECT_DIRS.config_dir.join("main.dhall"))
     }
 
     fn load_from_path<P: AsRef<Path>>(path: P) -> Self {

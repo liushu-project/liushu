@@ -35,6 +35,12 @@ impl SearchEngine {
     }
 }
 
+impl Default for SearchEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug)]
 pub struct SearchResultItem {
     pub text: String,
