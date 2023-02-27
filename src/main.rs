@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use liushu_core::deploy::deploy;
-use liushu_core::search::SearchEngine;
+use liushu_core::engine::Engine;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -27,7 +27,7 @@ fn main() {
             deploy();
         }
         Commands::Query { code } => {
-            let engine = SearchEngine::new();
+            let engine = Engine::new();
             let result = engine.search(code).unwrap();
             println!("{:?}", result);
         }

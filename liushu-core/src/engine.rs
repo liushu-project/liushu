@@ -3,11 +3,11 @@ use rusqlite::{params, Connection, Result as SqlResult, Row};
 
 use crate::dirs::PROJECT_DIRS;
 
-pub struct SearchEngine {
+pub struct Engine {
     conn: Connection,
 }
 
-impl SearchEngine {
+impl Engine {
     pub fn new() -> Self {
         // TODO: load db by config
         let db_dir = &PROJECT_DIRS.target_dir;
@@ -35,7 +35,7 @@ impl SearchEngine {
     }
 }
 
-impl Default for SearchEngine {
+impl Default for Engine {
     fn default() -> Self {
         Self::new()
     }

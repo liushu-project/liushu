@@ -1,4 +1,4 @@
-use liushu_core::search::SearchEngine;
+use liushu_core::engine::Engine;
 use tokio::sync::RwLock;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
@@ -64,7 +64,7 @@ impl LanguageServer for Backend {
             return Ok(None);
         }
 
-        let engine = SearchEngine::new();
+        let engine = Engine::new();
         match engine.search(input) {
             Ok(list) => {
                 let completion_resp = CompletionResponse::List(CompletionList {
