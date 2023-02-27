@@ -1,5 +1,5 @@
 use liushu_core::engine::Engine;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
@@ -15,6 +15,7 @@ macro_rules! regex {
 struct Backend {
     client: Client,
     input: RwLock<String>,
+    engine: Mutex<Engine>,
 }
 
 impl Backend {
@@ -22,6 +23,7 @@ impl Backend {
         Self {
             client,
             input: RwLock::new(String::new()),
+            engine: Mutex::new(Engine::new()),
         }
     }
 }
@@ -64,8 +66,7 @@ impl LanguageServer for Backend {
             return Ok(None);
         }
 
-        let engine = Engine::new();
-        match engine.search(input) {
+        match self.engine.lock().await.search(input) {
             Ok(list) => {
                 let completion_resp = CompletionResponse::List(CompletionList {
                     is_incomplete: false,

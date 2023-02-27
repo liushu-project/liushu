@@ -3,6 +3,7 @@ use rusqlite::{params, Connection, Result as SqlResult, Row};
 
 use crate::dirs::PROJECT_DIRS;
 
+#[derive(Debug)]
 pub struct Engine {
     conn: Connection,
 }
