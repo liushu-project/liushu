@@ -20,7 +20,7 @@ impl SearchEngine {
 
     pub fn search(&self, mut code: String) -> Result<Vec<SearchResultItem>> {
         let mut stmt = self.conn.prepare_cached(
-            "SELECT * FROM (SELECT * FROM dict WHERE code LIKE ?1 ORDER BY weight DESC) GROUP BY text",
+            "SELECT * FROM (SELECT * FROM dict WHERE code LIKE ?1) GROUP BY text ORDER BY weight DESC",
         )?;
 
         code.push('%');
