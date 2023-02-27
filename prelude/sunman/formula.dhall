@@ -5,7 +5,7 @@ let sunman
     = { id = "sunman"
       , name = Some "山人全息"
       , dictionaries =
-        [ "words.dict.csv", "phrase.brief.dict.csv", "phrases.core.dict.csv" ]
+        [ "words.dict.csv", "phrases.brief.dict.csv", "phrases.core.dict.csv" ]
       }
 
 in  sunman
