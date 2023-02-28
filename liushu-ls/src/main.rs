@@ -66,6 +66,8 @@ impl LanguageServer for Backend {
             return Ok(None);
         }
 
+        let filter_text = &input.clone();
+
         match self.engine.lock().await.search(input) {
             Ok(list) => {
                 let completion_resp = CompletionResponse::List(CompletionList {
@@ -82,7 +84,7 @@ impl LanguageServer for Backend {
                             CompletionItem {
                                 label,
                                 sort_text: Some(item.code.clone()),
-                                filter_text: Some(item.code.clone()),
+                                filter_text: Some(filter_text.to_owned()),
                                 insert_text: Some(item.text.clone()),
                                 kind: Some(CompletionItemKind::TEXT),
                                 ..Default::default()
