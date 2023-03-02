@@ -28,7 +28,7 @@ fn main() {
         }
         Commands::Query { code } => {
             let engine = Engine::default();
-            let result = engine.search(code).unwrap();
+            let result = engine.search(&code).unwrap();
             println!("{:?}", result);
         }
     };

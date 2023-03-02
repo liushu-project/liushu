@@ -14,12 +14,12 @@ impl Engine {
         Self { conn }
     }
 
-    pub fn search(&self, mut code: String) -> Result<Vec<SearchResultItem>> {
+    pub fn search(&self, code: &str) -> Result<Vec<SearchResultItem>> {
         let mut stmt = self.conn.prepare_cached(
             "SELECT * FROM (SELECT * FROM dict WHERE code LIKE ?1) GROUP BY text ORDER BY weight DESC",
         )?;
 
-        code.push('%');
+        let code = code.to_string() + "%";
         let rows = stmt.query_map(params![code], |row| SearchResultItem::try_from(row))?;
 
         let mut result = Vec::new();
@@ -93,7 +93,7 @@ mod tests {
 
         let engine = Engine::new(conn);
 
-        let result = engine.search("ni hao".to_string()).unwrap();
+        let result = engine.search("ni hao").unwrap();
         assert_eq!(
             result,
             vec![SearchResultItem {
@@ -105,7 +105,7 @@ mod tests {
             }]
         );
 
-        let not_found = engine.search("hello".to_string());
+        let not_found = engine.search("hello");
         assert!(not_found.is_ok());
         assert_eq!(not_found.unwrap(), Vec::new());
     }

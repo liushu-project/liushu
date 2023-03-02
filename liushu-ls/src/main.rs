@@ -57,7 +57,7 @@ impl LanguageServer for Backend {
     }
 
     async fn completion(&self, _: CompletionParams) -> Result<Option<CompletionResponse>> {
-        let input = self.input.read().await.clone();
+        let input = &self.input.read().await.clone();
         self.client
             .log_message(MessageType::INFO, format!("current input {:?}", input))
             .await;
@@ -65,8 +65,6 @@ impl LanguageServer for Backend {
         if input.is_empty() {
             return Ok(None);
         }
-
-        let filter_text = &input.clone();
 
         match self.engine.lock().await.search(input) {
             Ok(list) => {
@@ -84,7 +82,7 @@ impl LanguageServer for Backend {
                             CompletionItem {
                                 label,
                                 sort_text: Some(item.code.clone()),
-                                filter_text: Some(filter_text.to_owned()),
+                                filter_text: Some(input.to_owned()),
                                 insert_text: Some(item.text.clone()),
                                 kind: Some(CompletionItemKind::TEXT),
                                 ..Default::default()
