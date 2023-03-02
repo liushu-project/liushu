@@ -27,7 +27,7 @@ fn main() {
             deploy();
         }
         Commands::Query { code } => {
-            let engine = Engine::new();
+            let engine = Engine::default();
             let result = engine.search(code).unwrap();
             println!("{:?}", result);
         }

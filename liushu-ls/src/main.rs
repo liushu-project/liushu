@@ -23,7 +23,7 @@ impl Backend {
         Self {
             client,
             input: RwLock::new(String::new()),
-            engine: Mutex::new(Engine::new()),
+            engine: Mutex::new(Engine::default()),
         }
     }
 }
