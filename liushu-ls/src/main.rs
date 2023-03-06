@@ -1,4 +1,4 @@
-use liushu_core::engine::Engine;
+use liushu_core::engine::{InputMethodEngine, ShapeCodeEngine};
 use tokio::sync::{Mutex, RwLock};
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
@@ -15,7 +15,7 @@ macro_rules! regex {
 struct Backend {
     client: Client,
     input: RwLock<String>,
-    engine: Mutex<Engine>,
+    engine: Mutex<ShapeCodeEngine>,
 }
 
 impl Backend {
@@ -23,7 +23,7 @@ impl Backend {
         Self {
             client,
             input: RwLock::new(String::new()),
-            engine: Mutex::new(Engine::default()),
+            engine: Mutex::new(ShapeCodeEngine::default()),
         }
     }
 }

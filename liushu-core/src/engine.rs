@@ -3,18 +3,23 @@ use rusqlite::{params, Connection, Result as SqlResult, Row};
 
 use crate::dirs::PROJECT_DIRS;
 
+pub trait InputMethodEngine {
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>>;
+}
+
 #[derive(Debug)]
-pub struct Engine {
+pub struct ShapeCodeEngine {
     conn: Connection,
 }
 
-impl Engine {
+impl ShapeCodeEngine {
     pub fn new(conn: Connection) -> Self {
-        // TODO: load db by config
         Self { conn }
     }
+}
 
-    pub fn search(&self, code: &str) -> Result<Vec<SearchResultItem>> {
+impl InputMethodEngine for ShapeCodeEngine {
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>> {
         let mut stmt = self.conn.prepare_cached(
             "SELECT * FROM (SELECT * FROM dict WHERE code LIKE ?1) GROUP BY text ORDER BY weight DESC",
         )?;
@@ -31,7 +36,7 @@ impl Engine {
     }
 }
 
-impl Default for Engine {
+impl Default for ShapeCodeEngine {
     fn default() -> Self {
         let db_dir = &PROJECT_DIRS.target_dir;
         let db_path = db_dir.join("sunman.db3");
@@ -67,7 +72,7 @@ impl TryFrom<&Row<'_>> for SearchResultItem {
 mod tests {
     use rusqlite::{params, Connection};
 
-    use super::{Engine, SearchResultItem};
+    use super::*;
 
     #[test]
     fn test_search() {
@@ -91,7 +96,7 @@ mod tests {
         )
         .unwrap();
 
-        let engine = Engine::new(conn);
+        let engine = ShapeCodeEngine::new(conn);
 
         let result = engine.search("ni hao").unwrap();
         assert_eq!(
