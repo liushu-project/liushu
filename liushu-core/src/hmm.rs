@@ -1,13 +1,16 @@
+mod pinyin;
+
 use std::collections::HashMap;
 use std::f64::consts::E;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use itertools::{iproduct, Itertools};
-use pinyin::ToPinyin;
+use itertools::Itertools;
 use redb::{Database, ReadableTable, TableDefinition};
 use regex::Regex;
+
+use self::pinyin::{py_split, ToPinyin, POSIBLE_PINYINS};
 
 const INIT_TABLE: TableDefinition<&str, f64> = TableDefinition::new("init_prob");
 const TRANS_TABLE: TableDefinition<(&str, &str), f64> = TableDefinition::new("trans_prob");
@@ -176,34 +179,16 @@ fn count_pinyin_states(db: &Database) {
 }
 
 pub struct Hmm {
-    py_list: Vec<String>,
     db: Database,
 }
 
 impl Hmm {
     pub fn new(db: Database) -> Self {
-        let sm_list = "b,p,m,f,d,t,n,l,g,k,h,j,q,x,z,c,s,r,zh,ch,sh,y,w".split(',');
-        let ym_list = "a,o,e,i,u,v,ai,ei,ui,ao,ou,iu,ie,ve,er,an,en,in,un,ang,eng,ing,ong,uai,ia,uan,uang,uo,ua".split(',');
-        let ztrd_list = "a,o,e,ai,ei,ao,ou,er,an,en,ang,zi,ci,si,zhi,chi,shi,ri,yi,wu,yu,yin,ying,yun,ye,yue,yuan".split(',');
-        let mut py_list = Vec::new();
-        for (s, y) in iproduct!(sm_list, ym_list) {
-            let temp = s.to_string() + y;
-            if !py_list.contains(&temp) {
-                py_list.push(temp);
-            }
-        }
-
-        for z in ztrd_list {
-            if !py_list.contains(&z.to_string()) {
-                py_list.push(z.to_string());
-            }
-        }
-
-        Self { db, py_list }
+        Self { db }
     }
 
     pub fn trans(&self, code: &str) -> Vec<String> {
-        let possible_pinyins = pysplict(code, &self.py_list);
+        let possible_pinyins = py_split(code, &POSIBLE_PINYINS);
         let min_f = -3.14e100;
         let mut result: Vec<(usize, String)> = Vec::new();
 
@@ -306,29 +291,5 @@ impl Hmm {
 
         result.sort_by_key(|x| x.0);
         result.iter().map(|x| x.1.clone()).collect_vec()
-    }
-}
-
-fn pysplict(word: &str, word_list: &Vec<String>) -> Vec<Vec<String>> {
-    let mut res = Vec::new();
-    dp(&mut res, word, word_list, "".to_string());
-    res.sort_by_key(|x| x.len());
-    res
-}
-
-fn dp(res: &mut Vec<Vec<String>>, word: &str, word_list: &Vec<String>, pinyin_list_str: String) {
-    let len = word.len();
-    for i in 0..=len {
-        let mut p_list: Vec<String> = pinyin_list_str.split(',').map(|x| x.to_string()).collect();
-        let sub_word = word[0..i].to_string();
-        if word_list.contains(&sub_word) {
-            if i == len {
-                p_list.push(sub_word);
-                res.push(p_list[1..].iter().map(|x| x.to_string()).collect());
-            } else {
-                p_list.push(sub_word);
-                dp(res, &word[i..], word_list, p_list.join(","));
-            }
-        }
     }
 }
