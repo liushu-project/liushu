@@ -7,7 +7,7 @@ use std::io::Read;
 use std::path::Path;
 
 use itertools::Itertools;
-use redb::{Database, ReadableTable, TableDefinition};
+use redb::{Database, ReadOnlyTable, ReadableTable, TableDefinition};
 use regex::Regex;
 
 use self::pinyin::{py_split, ToPinyin, POSIBLE_PINYINS};
@@ -16,6 +16,7 @@ const INIT_TABLE: TableDefinition<&str, f64> = TableDefinition::new("init_prob")
 const TRANS_TABLE: TableDefinition<(&str, &str), f64> = TableDefinition::new("trans_prob");
 const EMISS_TABLE: TableDefinition<(&str, &str), f64> = TableDefinition::new("emiss_prob");
 const PINYIN_STATES: TableDefinition<&str, &str> = TableDefinition::new("pinyin_states");
+const MIN_F: f64 = -3.14e100;
 
 pub fn train(corpus_file: impl AsRef<Path>, save_to: impl AsRef<Path>) {
     let chinese_re = Regex::new(r#"[\u4e00-\u9fa5]{2,}"#).unwrap();
@@ -178,6 +179,7 @@ fn count_pinyin_states(db: &Database) {
     write_txn.commit().unwrap();
 }
 
+#[derive(Debug)]
 pub struct Hmm {
     db: Database,
 }
@@ -189,107 +191,126 @@ impl Hmm {
 
     pub fn trans(&self, code: &str) -> Vec<String> {
         let possible_pinyins = py_split(code, &POSIBLE_PINYINS);
-        let min_f = -3.14e100;
-        let mut result: Vec<(usize, String)> = Vec::new();
+        let mut result = Vec::new();
 
         let read_txn = self.db.begin_read().unwrap();
         let init_prob = read_txn.open_table(INIT_TABLE).unwrap();
         let pinyin_states = read_txn.open_table(PINYIN_STATES).unwrap();
-        let trans_table = read_txn.open_table(TRANS_TABLE).unwrap();
+        let trans_prob = read_txn.open_table(TRANS_TABLE).unwrap();
         let emiss_prob = read_txn.open_table(EMISS_TABLE).unwrap();
 
         for pinyins in possible_pinyins {
-            let length = pinyins.len();
-            let mut viterbi: HashMap<usize, HashMap<String, (f64, String)>> = HashMap::new();
-            for i in 0..length {
-                viterbi.insert(i, HashMap::new());
-            }
+            result.push(Self::viterbi(
+                &pinyins,
+                &pinyin_states,
+                &init_prob,
+                &trans_prob,
+                &emiss_prob,
+            ));
+        }
 
-            let key = pinyins[0].as_str();
+        result
+            .into_iter()
+            .flatten()
+            .map(|x| x.0.clone())
+            .collect_vec()
+    }
+
+    pub fn viterbi(
+        pinyin_list: &Vec<String>,
+        pinyin_states: &ReadOnlyTable<&str, &str>,
+        init_prob: &ReadOnlyTable<&str, f64>,
+        trans_prob: &ReadOnlyTable<(&str, &str), f64>,
+        emiss_prob: &ReadOnlyTable<(&str, &str), f64>,
+    ) -> Vec<(String, f64)> {
+        let length = pinyin_list.len();
+        let mut viterbi: HashMap<usize, HashMap<String, (f64, String)>> = HashMap::new();
+        for i in 0..length {
+            viterbi.insert(i, HashMap::new());
+        }
+
+        let key = pinyin_list[0].as_str();
+        let chars = pinyin_states.get(key).unwrap().unwrap();
+        for s in chars.value().chars() {
+            let p = viterbi.get_mut(&0).unwrap();
+            let init = init_prob
+                .get(s.to_string().as_str())
+                .unwrap()
+                .map(|x| x.value())
+                .unwrap_or(MIN_F);
+            let emiss = emiss_prob
+                .get((s.to_string().as_str(), pinyin_list[0].as_str()))
+                .unwrap()
+                .map(|x| x.value())
+                .unwrap_or(MIN_F);
+            p.insert(s.to_string(), (init + emiss, "".to_string()));
+        }
+
+        for i in 0..(length - 1) {
+            let key = pinyin_list[i + 1].as_str();
             let chars = pinyin_states.get(key).unwrap().unwrap();
             for s in chars.value().chars() {
-                let p = viterbi.get_mut(&0).unwrap();
-                let init = init_prob
-                    .get(s.to_string().as_str())
+                let value = pinyin_states
+                    .get(pinyin_list[i].as_str())
                     .unwrap()
-                    .map(|x| x.value())
-                    .unwrap_or(min_f);
-                let emiss = emiss_prob
-                    .get((s.to_string().as_str(), pinyins[0].as_str()))
                     .unwrap()
-                    .map(|x| x.value())
-                    .unwrap_or(min_f);
-                p.insert(s.to_string(), (init + emiss, "".to_string()));
+                    .value()
+                    .chars()
+                    .map(|c| {
+                        let vit = viterbi[&i][c.to_string().as_str()].0;
+                        let emission = emiss_prob
+                            .get((s.to_string().as_str(), pinyin_list[i + 1].as_str()))
+                            .unwrap()
+                            .map(|e| e.value())
+                            .unwrap_or(MIN_F);
+                        let trans = trans_prob
+                            .get((s.to_string().as_str(), c.to_string().as_str()))
+                            .unwrap()
+                            .map(|t| t.value())
+                            .unwrap_or(MIN_F);
+                        (vit + emission + trans, c.to_string())
+                    })
+                    .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap())
+                    .unwrap();
+                let p = viterbi.get_mut(&(i + 1)).unwrap();
+                p.insert(s.to_string(), value);
             }
+        }
 
-            for i in 0..(length - 1) {
-                let key = pinyins[i + 1].as_str();
-                let chars = pinyin_states.get(key).unwrap().unwrap();
-                for s in chars.value().chars() {
-                    let value = pinyin_states
-                        .get(pinyins[i].as_str())
-                        .unwrap()
-                        .unwrap()
-                        .value()
-                        .chars()
-                        .map(|c| {
-                            let vit = viterbi[&i][c.to_string().as_str()].0;
-                            let emission = emiss_prob
-                                .get((s.to_string().as_str(), pinyins[i + 1].as_str()))
-                                .unwrap()
-                                .map(|e| e.value())
-                                .unwrap_or(min_f);
-                            let trans = trans_table
-                                .get((s.to_string().as_str(), c.to_string().as_str()))
-                                .unwrap()
-                                .map(|t| t.value())
-                                .unwrap_or(min_f);
-                            (vit + emission + trans, c.to_string())
-                        })
-                        .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap())
-                        .unwrap();
-                    let p = viterbi.get_mut(&(i + 1)).unwrap();
-                    p.insert(s.to_string(), value);
-                }
-            }
+        let key = pinyin_list.last().unwrap().as_str();
+        let last = pinyin_states.get(key).unwrap().unwrap();
+        for s in last.value().chars() {
+            let old = &viterbi[&(length - 1)][s.to_string().as_str()];
+            let trans = trans_prob
+                .get(("EOS", s.to_string().as_str()))
+                .unwrap()
+                .map(|x| x.value())
+                .unwrap_or(MIN_F);
+            let new_value = (old.0 + trans, old.1.clone());
+            let p = viterbi.get_mut(&(length - 1)).unwrap();
+            p.insert(s.to_string(), new_value);
+        }
 
-            let key = pinyins.last().unwrap().as_str();
-            let last = pinyin_states.get(key).unwrap().unwrap();
-            for s in last.value().chars() {
-                let old = &viterbi[&(length - 1)][s.to_string().as_str()];
-                let trans = trans_table
-                    .get(("EOS", s.to_string().as_str()))
-                    .unwrap()
-                    .map(|x| x.value())
-                    .unwrap_or(min_f);
-                let new_value = (old.0 + trans, old.1.clone());
-                let p = viterbi.get_mut(&(length - 1)).unwrap();
-                p.insert(s.to_string(), new_value);
-            }
-
-            let words_list = viterbi[&(length - 1)]
-                .iter()
-                .sorted_by(|a, b| a.1 .0.partial_cmp(&b.1 .0).unwrap())
-                .rev()
-                .take(100);
-
-            for (idx, data) in words_list.enumerate() {
+        viterbi[&(length - 1)]
+            .iter()
+            .sorted_by(|a, b| a.1 .0.partial_cmp(&b.1 .0).unwrap())
+            .rev()
+            .map(|data| {
                 let mut words = vec!["".to_string(); length];
+                let mut weight = 0.0;
                 if let Some(last) = words.last_mut() {
                     *last = data.0.clone();
                 }
 
                 for n in (0..(length - 1)).rev() {
-                    words[n] = viterbi[&(n + 1)][words[n + 1].to_string().as_str()]
-                        .1
-                        .clone();
+                    let current = &viterbi[&(n + 1)][words[n + 1].to_string().as_str()];
+                    words[n] = current.1.clone();
+                    weight += current.0;
                 }
 
-                result.push((idx, words.join("")));
-            }
-        }
-
-        result.sort_by_key(|x| x.0);
-        result.iter().map(|x| x.1.clone()).collect_vec()
+                (words.join(""), weight)
+            })
+            .take(10)
+            .collect_vec()
     }
 }
