@@ -210,11 +210,7 @@ impl Hmm {
             ));
         }
 
-        result
-            .into_iter()
-            .flatten()
-            .map(|x| x.0.clone())
-            .collect_vec()
+        result.into_iter().flatten().map(|x| x.0).collect_vec()
     }
 
     pub fn viterbi(
@@ -341,7 +337,7 @@ impl InputMethodEngine for Hmm {
             .into_iter()
             .flatten()
             .map(|(text, weight)| SearchResultItem {
-                text: text.clone(),
+                text,
                 weight: weight as u64,
 
                 // workaround
