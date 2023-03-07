@@ -42,7 +42,7 @@ fn main() {
             let pinyin = Hmm::new(db);
 
             let sunman = ShapeCodeEngine::default();
-            let engine_manager = EngineManager::from(
+            let mut engine_manager = EngineManager::from(
                 [Box::new(sunman), Box::new(pinyin)] as [Box<dyn InputMethodEngine>; 2]
             );
 
@@ -54,7 +54,11 @@ fn main() {
                     Ok(_) => {
                         let input = input.trim();
 
-                        if input == "*" {
+                        if input == "*shift" {
+                            engine_manager.set_active_engine(1);
+                        }
+
+                        if input == "*quit" {
                             break;
                         }
 

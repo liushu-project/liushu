@@ -13,6 +13,12 @@ pub struct EngineManager {
     engines: VecDeque<Box<dyn InputMethodEngine>>,
 }
 
+impl EngineManager {
+    pub fn set_active_engine(&mut self, idx: usize) {
+        self.engines.swap(0, idx);
+    }
+}
+
 impl<T> From<T> for EngineManager
 where
     T: Into<VecDeque<Box<dyn InputMethodEngine>>>,
@@ -93,6 +99,7 @@ impl TryFrom<&Row<'_>> for SearchResultItem {
 
 #[cfg(test)]
 mod tests {
+    use anyhow::anyhow;
     use rusqlite::{params, Connection};
 
     use super::*;
@@ -136,5 +143,31 @@ mod tests {
         let not_found = engine.search("hello");
         assert!(not_found.is_ok());
         assert_eq!(not_found.unwrap(), Vec::new());
+    }
+
+    #[test]
+    fn test_engine_manager() {
+        struct Engine1;
+        impl InputMethodEngine for Engine1 {
+            fn search(&self, _code: &str) -> Result<Vec<SearchResultItem>> {
+                Ok(vec![])
+            }
+        }
+
+        struct Engine2;
+        impl InputMethodEngine for Engine2 {
+            fn search(&self, _code: &str) -> Result<Vec<SearchResultItem>> {
+                Err(anyhow!("error"))
+            }
+        }
+
+        let mut engine = EngineManager::from(
+            [Box::new(Engine1), Box::new(Engine2)] as [Box<dyn InputMethodEngine>; 2]
+        );
+
+        assert!(engine.search("hello").is_ok());
+
+        engine.set_active_engine(1);
+        assert!(engine.search("hello").is_err());
     }
 }
