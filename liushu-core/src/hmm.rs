@@ -11,6 +11,7 @@ use redb::{Database, ReadOnlyTable, ReadableTable, TableDefinition};
 use regex::Regex;
 
 use self::pinyin::{py_split, ToPinyin, POSIBLE_PINYINS};
+use crate::engine::{InputMethodEngine, SearchResultItem};
 
 const INIT_TABLE: TableDefinition<&str, f64> = TableDefinition::new("init_prob");
 const TRANS_TABLE: TableDefinition<(&str, &str), f64> = TableDefinition::new("trans_prob");
@@ -312,5 +313,42 @@ impl Hmm {
             })
             .take(10)
             .collect_vec()
+    }
+}
+
+impl InputMethodEngine for Hmm {
+    fn search(&self, code: &str) -> anyhow::Result<Vec<SearchResultItem>> {
+        let possible_pinyins = py_split(code, &POSIBLE_PINYINS);
+        let mut result = Vec::new();
+
+        let read_txn = self.db.begin_read()?;
+        let init_prob = read_txn.open_table(INIT_TABLE)?;
+        let pinyin_states = read_txn.open_table(PINYIN_STATES)?;
+        let trans_prob = read_txn.open_table(TRANS_TABLE)?;
+        let emiss_prob = read_txn.open_table(EMISS_TABLE)?;
+
+        for pinyins in possible_pinyins {
+            result.push(Self::viterbi(
+                &pinyins,
+                &pinyin_states,
+                &init_prob,
+                &trans_prob,
+                &emiss_prob,
+            ));
+        }
+
+        Ok(result
+            .into_iter()
+            .flatten()
+            .map(|(text, weight)| SearchResultItem {
+                text: text.clone(),
+                weight: weight as u64,
+
+                // workaround
+                code: "".to_string(),
+                stem: None,
+                comment: None,
+            })
+            .collect_vec())
     }
 }

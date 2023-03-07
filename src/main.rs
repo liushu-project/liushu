@@ -3,7 +3,7 @@ use std::io::{stdin, stdout, Write};
 use clap::{Parser, Subcommand};
 use liushu_core::deploy::deploy;
 use liushu_core::dirs::PROJECT_DIRS;
-use liushu_core::engine::{InputMethodEngine, ShapeCodeEngine};
+use liushu_core::engine::{EngineManager, InputMethodEngine, ShapeCodeEngine};
 use liushu_core::hmm::{train, Hmm};
 use redb::Database;
 
@@ -19,16 +19,11 @@ enum Commands {
     Deploy,
 
     #[command(arg_required_else_help = true)]
-    Query {
-        code: String,
-    },
-
-    #[command(arg_required_else_help = true)]
     Train {
         corpus_file: String,
     },
 
-    Query2,
+    Repl,
 }
 
 fn main() {
@@ -38,34 +33,43 @@ fn main() {
         Commands::Deploy => {
             deploy();
         }
-        Commands::Query { code } => {
-            let engine = ShapeCodeEngine::default();
-            let result = engine.search(&code).unwrap();
-            println!("{:?}", result);
-        }
         Commands::Train { corpus_file } => {
             let save_to = &PROJECT_DIRS.target_dir.join("hmm_model.redb");
             train(corpus_file, save_to);
         }
-        Commands::Query2 => {
+        Commands::Repl => {
             let db = Database::open(PROJECT_DIRS.target_dir.join("hmm_model.redb")).unwrap();
-            let hmm = Hmm::new(db);
+            let pinyin = Hmm::new(db);
+
+            let sunman = ShapeCodeEngine::default();
+            let engine_manager = EngineManager::from(
+                [Box::new(sunman), Box::new(pinyin)] as [Box<dyn InputMethodEngine>; 2]
+            );
 
             loop {
-                print!("hmm> ");
+                print!("liushu> ");
                 stdout().flush().unwrap();
                 let mut input = String::new();
                 match stdin().read_line(&mut input) {
                     Ok(_) => {
+                        let input = input.trim();
+
                         if input == "*" {
                             break;
                         }
 
-                        hmm.trans(input.trim()).iter().take(8).enumerate().for_each(
-                            |(i, result)| {
-                                println!("result{}: {}", i, result);
-                            },
-                        );
+                        engine_manager
+                            .search(input)
+                            .unwrap_or_else(|e| {
+                                println!("error: {}", e);
+                                vec![]
+                            })
+                            .iter()
+                            .take(8)
+                            .enumerate()
+                            .for_each(|(i, result)| {
+                                println!("result{}: {:?}", i, result);
+                            });
                     }
                     Err(error) => println!("error: {}", error),
                 }

@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use anyhow::Result;
 use rusqlite::{params, Connection, Result as SqlResult, Row};
 
@@ -5,6 +7,27 @@ use crate::dirs::PROJECT_DIRS;
 
 pub trait InputMethodEngine {
     fn search(&self, code: &str) -> Result<Vec<SearchResultItem>>;
+}
+
+pub struct EngineManager {
+    engines: VecDeque<Box<dyn InputMethodEngine>>,
+}
+
+impl<T> From<T> for EngineManager
+where
+    T: Into<VecDeque<Box<dyn InputMethodEngine>>>,
+{
+    fn from(value: T) -> Self {
+        Self {
+            engines: value.into(),
+        }
+    }
+}
+
+impl InputMethodEngine for EngineManager {
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>> {
+        self.engines[0].search(code)
+    }
 }
 
 #[derive(Debug)]
