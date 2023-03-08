@@ -4,3 +4,6 @@
 
 .envrc
 .direnv/
+
+# dhall history file
+**/.history
