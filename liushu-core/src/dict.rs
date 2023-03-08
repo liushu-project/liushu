@@ -29,7 +29,10 @@ pub fn compile_dicts_to_db<P: AsRef<Path>>(dict_paths: Vec<P>, db_path: P) -> Re
     )?;
     let tx = conn.transaction()?;
     for dict_path in dict_paths {
-        let mut rdr = csv::Reader::from_path(dict_path)?;
+        let mut rdr = csv::ReaderBuilder::new()
+            .delimiter(b'\t')
+            .comment(Some(b'#'))
+            .from_path(dict_path)?;
         for result in rdr.deserialize() {
             let dict: DictItem = result?;
             tx.execute(
