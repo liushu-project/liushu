@@ -31,7 +31,7 @@ fn main() {
 
     match args.command {
         Commands::Deploy => {
-            deploy();
+            deploy().unwrap();
         }
         Commands::Train { corpus_file } => {
             let save_to = &PROJECT_DIRS.target_dir.join("hmm_model.redb");

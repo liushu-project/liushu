@@ -1,12 +1,11 @@
 use std::collections::VecDeque;
 
-use anyhow::Result;
 use rusqlite::{params, Connection, Result as SqlResult, Row};
 
-use crate::dirs::PROJECT_DIRS;
+use crate::{dirs::PROJECT_DIRS, error::LiushuError};
 
 pub trait InputMethodEngine {
-    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>>;
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError>;
 }
 
 pub struct EngineManager {
@@ -31,7 +30,7 @@ where
 }
 
 impl InputMethodEngine for EngineManager {
-    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>> {
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
         self.engines[0].search(code)
     }
 }
@@ -48,7 +47,7 @@ impl ShapeCodeEngine {
 }
 
 impl InputMethodEngine for ShapeCodeEngine {
-    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>> {
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
         let mut stmt = self.conn.prepare_cached(
             "SELECT * FROM (SELECT * FROM dict WHERE code LIKE ?1) GROUP BY text ORDER BY weight DESC",
         )?;
@@ -99,7 +98,6 @@ impl TryFrom<&Row<'_>> for SearchResultItem {
 
 #[cfg(test)]
 mod tests {
-    use anyhow::anyhow;
     use rusqlite::{params, Connection};
 
     use super::*;
@@ -149,15 +147,15 @@ mod tests {
     fn test_engine_manager() {
         struct Engine1;
         impl InputMethodEngine for Engine1 {
-            fn search(&self, _code: &str) -> Result<Vec<SearchResultItem>> {
+            fn search(&self, _code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
                 Ok(vec![])
             }
         }
 
         struct Engine2;
         impl InputMethodEngine for Engine2 {
-            fn search(&self, _code: &str) -> Result<Vec<SearchResultItem>> {
-                Err(anyhow!("error"))
+            fn search(&self, _code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
+                Err(LiushuError::Other("test".to_string()))
             }
         }
 

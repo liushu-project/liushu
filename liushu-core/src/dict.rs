@@ -1,8 +1,9 @@
 use std::path::Path;
 
-use anyhow::Result;
 use rusqlite::{params, Connection};
 use serde::Deserialize;
+
+use crate::error::LiushuError;
 
 #[derive(Debug, Deserialize)]
 pub struct DictItem {
@@ -13,7 +14,10 @@ pub struct DictItem {
     pub comment: Option<String>,
 }
 
-pub fn compile_dicts_to_db<P: AsRef<Path>>(dict_paths: Vec<P>, db_path: P) -> Result<()> {
+pub fn compile_dicts_to_db<P: AsRef<Path>>(
+    dict_paths: Vec<P>,
+    db_path: P,
+) -> Result<(), LiushuError> {
     let mut conn = Connection::open(db_path)?;
     conn.execute(
         "CREATE TABLE dict (

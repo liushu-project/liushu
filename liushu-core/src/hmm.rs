@@ -11,7 +11,10 @@ use redb::{Database, ReadOnlyTable, ReadableTable, TableDefinition};
 use regex::Regex;
 
 use self::pinyin::{py_split, ToPinyin, POSIBLE_PINYINS};
-use crate::engine::{InputMethodEngine, SearchResultItem};
+use crate::{
+    engine::{InputMethodEngine, SearchResultItem},
+    error::LiushuError,
+};
 
 const INIT_TABLE: TableDefinition<&str, f64> = TableDefinition::new("init_prob");
 const TRANS_TABLE: TableDefinition<(&str, &str), f64> = TableDefinition::new("trans_prob");
@@ -313,7 +316,7 @@ impl Hmm {
 }
 
 impl InputMethodEngine for Hmm {
-    fn search(&self, code: &str) -> anyhow::Result<Vec<SearchResultItem>> {
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
         let possible_pinyins = py_split(code, &POSIBLE_PINYINS);
         let mut result = Vec::new();
 
