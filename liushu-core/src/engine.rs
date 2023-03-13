@@ -78,7 +78,6 @@ pub struct SearchResultItem {
     pub text: String,
     pub code: String,
     pub weight: u64,
-    pub stem: Option<String>,
     pub comment: Option<String>,
 }
 
@@ -90,7 +89,6 @@ impl TryFrom<&Row<'_>> for SearchResultItem {
             text: row.get("text")?,
             code: row.get("code")?,
             weight: row.get("weight")?,
-            stem: row.get("stem").ok(),
             comment: row.get("comment").ok(),
         })
     }
@@ -109,8 +107,8 @@ mod tests {
         let conn = Connection::open_in_memory().unwrap();
         conn.execute(CREATE_DICT_TABLE_SQL, ()).unwrap();
         conn.execute(
-            "INSERT INTO dict (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params!["你好", "ni hao", 1, None::<String>, None::<String>],
+            "INSERT INTO dict (text, code, weight, comment) VALUES (?1, ?2, ?3, ?4)",
+            params!["你好", "ni hao", 1, None::<String>],
         )
         .unwrap();
 
@@ -123,7 +121,6 @@ mod tests {
                 text: "你好".to_string(),
                 code: "ni hao".to_string(),
                 weight: 1,
-                stem: None,
                 comment: None,
             }]
         );

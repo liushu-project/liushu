@@ -322,7 +322,6 @@ impl InputMethodEngine for Hmm {
 
                 // workaround
                 code: "".to_string(),
-                stem: None,
                 comment: None,
             })
             .collect_vec())

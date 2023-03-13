@@ -11,7 +11,6 @@ pub const CREATE_DICT_TABLE_SQL: &'static str = r#"
         text TEXT NOT NULL,
         code TEXT NOT NULL,
         weight INTEGER NOT NULL,
-        stem TEXT,
         comment TEXT,
         UNIQUE(text, code)
     )
@@ -22,7 +21,6 @@ pub struct DictItem {
     pub text: String,
     pub code: String,
     pub weight: u64,
-    pub stem: Option<String>,
     pub comment: Option<String>,
 }
 
@@ -41,8 +39,8 @@ pub fn compile_dicts_to_db<P: AsRef<Path>>(
         for result in rdr.deserialize() {
             let dict: DictItem = result?;
             tx.execute(
-                "INSERT INTO dict (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
-                params![dict.text, dict.code, dict.weight, dict.stem, dict.comment],
+                "INSERT INTO dict (text, code, weight, comment) VALUES (?1, ?2, ?3, ?4)",
+                params![dict.text, dict.code, dict.weight, dict.comment],
             )?;
         }
     }
