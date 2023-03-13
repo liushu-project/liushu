@@ -100,24 +100,14 @@ impl TryFrom<&Row<'_>> for SearchResultItem {
 mod tests {
     use rusqlite::{params, Connection};
 
+    use crate::dict::CREATE_DICT_TABLE_SQL;
+
     use super::*;
 
     #[test]
     fn test_search() {
         let conn = Connection::open_in_memory().unwrap();
-        conn.execute(
-            "CREATE TABLE dict (
-                id INTEGER PRIMARY KEY,
-                text TEXT NOT NULL,
-                code TEXT NOT NULL,
-                weight INTEGER NOT NULL,
-                stem TEXT,
-                comment TEXT,
-                UNIQUE(text, code)
-            )",
-            (),
-        )
-        .unwrap();
+        conn.execute(CREATE_DICT_TABLE_SQL, ()).unwrap();
         conn.execute(
             "INSERT INTO dict (text, code, weight, stem, comment) VALUES (?1, ?2, ?3, ?4, ?5)",
             params!["你好", "ni hao", 1, None::<String>, None::<String>],

@@ -5,6 +5,18 @@ use serde::Deserialize;
 
 use crate::error::LiushuError;
 
+pub const CREATE_DICT_TABLE_SQL: &'static str = r#"
+    CREATE TABLE dict (
+        id INTEGER PRIMARY KEY,
+        text TEXT NOT NULL,
+        code TEXT NOT NULL,
+        weight INTEGER NOT NULL,
+        stem TEXT,
+        comment TEXT,
+        UNIQUE(text, code)
+    )
+"#;
+
 #[derive(Debug, Deserialize)]
 pub struct DictItem {
     pub text: String,
@@ -19,18 +31,7 @@ pub fn compile_dicts_to_db<P: AsRef<Path>>(
     db_path: P,
 ) -> Result<(), LiushuError> {
     let mut conn = Connection::open(db_path)?;
-    conn.execute(
-        "CREATE TABLE dict (
-                id INTEGER PRIMARY KEY,
-                text TEXT NOT NULL,
-                code TEXT NOT NULL,
-                weight INTEGER NOT NULL,
-                stem TEXT,
-                comment TEXT,
-                UNIQUE(text, code)
-            )",
-        (),
-    )?;
+    conn.execute(CREATE_DICT_TABLE_SQL, ())?;
     let tx = conn.transaction()?;
     for dict_path in dict_paths {
         let mut rdr = csv::ReaderBuilder::new()
