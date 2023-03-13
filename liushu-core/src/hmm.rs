@@ -193,29 +193,6 @@ impl Hmm {
         Self { db }
     }
 
-    pub fn trans(&self, code: &str) -> Vec<String> {
-        let possible_pinyins = py_split(code, &POSIBLE_PINYINS);
-        let mut result = Vec::new();
-
-        let read_txn = self.db.begin_read().unwrap();
-        let init_prob = read_txn.open_table(INIT_TABLE).unwrap();
-        let pinyin_states = read_txn.open_table(PINYIN_STATES).unwrap();
-        let trans_prob = read_txn.open_table(TRANS_TABLE).unwrap();
-        let emiss_prob = read_txn.open_table(EMISS_TABLE).unwrap();
-
-        for pinyins in possible_pinyins {
-            result.push(Self::viterbi(
-                &pinyins,
-                &pinyin_states,
-                &init_prob,
-                &trans_prob,
-                &emiss_prob,
-            ));
-        }
-
-        result.into_iter().flatten().map(|x| x.0).collect_vec()
-    }
-
     pub fn viterbi(
         pinyin_list: &Vec<String>,
         pinyin_states: &ReadOnlyTable<&str, &str>,
