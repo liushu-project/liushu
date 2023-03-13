@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::error::LiushuError;
 
-pub const CREATE_DICT_TABLE_SQL: &'static str = r#"
+pub const CREATE_DICT_TABLE_SQL: &str = r#"
     CREATE TABLE dict (
         id INTEGER PRIMARY KEY,
         text TEXT NOT NULL,
