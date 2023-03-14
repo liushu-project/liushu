@@ -25,7 +25,7 @@ impl Config {
 
 #[derive(Debug, Serialize, Deserialize, StaticType)]
 pub struct Formula {
-    id: String,
+    pub id: String,
     name: Option<String>,
     dictionaries: Vec<String>,
 }

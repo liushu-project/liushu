@@ -1,9 +1,13 @@
 use std::path::Path;
 
+use redb::TableDefinition;
 use rusqlite::{params, Connection};
 use serde::Deserialize;
 
 use crate::error::LiushuError;
+
+pub const DICTIONARY: TableDefinition<(&str, &str), (u64, Option<&str>)> =
+    TableDefinition::new("dictionary");
 
 pub const CREATE_DICT_TABLE_SQL: &str = r#"
     CREATE TABLE dict (
@@ -24,9 +28,9 @@ pub struct DictItem {
     pub comment: Option<String>,
 }
 
-pub fn compile_dicts_to_db<P: AsRef<Path>>(
-    dict_paths: Vec<P>,
-    db_path: P,
+pub fn compile_dicts_to_db(
+    dict_paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    db_path: impl AsRef<Path>,
 ) -> Result<(), LiushuError> {
     let mut conn = Connection::open(db_path)?;
     conn.execute(CREATE_DICT_TABLE_SQL, ())?;
@@ -45,5 +49,32 @@ pub fn compile_dicts_to_db<P: AsRef<Path>>(
         }
     }
     tx.commit()?;
+    Ok(())
+}
+
+pub fn compile_dicts_to_db2(
+    dict_paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    db_path: impl AsRef<Path>,
+) -> Result<(), LiushuError> {
+    let table = redb::Database::create(db_path)?;
+    let tx = table.begin_write()?;
+    {
+        let mut dict_table = tx.open_table(DICTIONARY)?;
+        for dict_path in dict_paths {
+            let mut rdr = csv::ReaderBuilder::new()
+                .delimiter(b'\t')
+                .comment(Some(b'#'))
+                .from_path(dict_path)?;
+            for result in rdr.deserialize() {
+                let dict_item: DictItem = result?;
+                dict_table.insert(
+                    &(dict_item.code.as_str(), dict_item.text.as_str()),
+                    (dict_item.weight, dict_item.comment.as_deref()),
+                )?;
+            }
+        }
+    }
+    tx.commit()?;
+
     Ok(())
 }

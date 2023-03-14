@@ -1,8 +1,10 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, path::Path};
 
+use patricia_tree::PatriciaMap;
+use redb::{Database, ReadableTable};
 use rusqlite::{params, Connection, Result as SqlResult, Row};
 
-use crate::{dirs::PROJECT_DIRS, error::LiushuError};
+use crate::{dict::DICTIONARY, dirs::PROJECT_DIRS, error::LiushuError};
 
 pub trait InputMethodEngine {
     fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError>;
@@ -70,6 +72,66 @@ impl Default for ShapeCodeEngine {
         let db_path = db_dir.join("sunman.db3");
         let conn = Connection::open(db_path).unwrap();
         Self::new(conn)
+    }
+}
+
+pub struct EngineWithRedb {
+    db: Database,
+    trie: PatriciaMap<Vec<String>>,
+}
+
+impl EngineWithRedb {
+    pub fn with(path: impl AsRef<Path>) -> Result<Self, LiushuError> {
+        let db = Database::open(path)?;
+        let mut trie = PatriciaMap::new();
+        {
+            let tx = db.begin_read()?;
+            let dictionary = tx.open_table(DICTIONARY)?;
+            dictionary
+                .iter()?
+                .map(|(key, _)| {
+                    let (code, text) = key.value();
+                    (code.to_owned(), text.to_owned())
+                })
+                .for_each(|(code, text)| {
+                    if trie.get(&code).is_none() {
+                        trie.insert_str(code.as_str(), vec![text]);
+                    } else if let Some(entry) = trie.get_mut(code.as_str()) {
+                        entry.push(text)
+                    }
+                });
+        }
+
+        Ok(Self { db, trie })
+    }
+}
+
+impl InputMethodEngine for EngineWithRedb {
+    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
+        let tx = self.db.begin_read()?;
+        let dictionary = tx.open_table(DICTIONARY)?;
+        Ok(self
+            .trie
+            .iter_prefix(code.as_bytes())
+            .flat_map(|(key, value)| {
+                let dictionary = &dictionary;
+                value.iter().map(move |text| {
+                    let code = String::from_utf8(key.clone()).unwrap();
+                    dictionary.get(&(code.as_str(), text.as_str())).map(|a| {
+                        a.map(|v| {
+                            let (weight, comment) = v.value();
+                            SearchResultItem {
+                                code: code.clone(),
+                                text: text.clone(),
+                                weight,
+                                comment: comment.map(|c| c.to_owned()),
+                            }
+                        })
+                    })
+                })
+            })
+            .filter_map(|v| v.ok().flatten())
+            .collect())
     }
 }
 

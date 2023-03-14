@@ -3,9 +3,8 @@ use std::io::{stdin, stdout, Write};
 use clap::{Parser, Subcommand};
 use liushu_core::deploy::deploy;
 use liushu_core::dirs::PROJECT_DIRS;
-use liushu_core::engine::{EngineManager, InputMethodEngine, ShapeCodeEngine};
-use liushu_core::hmm::{train, Hmm};
-use redb::Database;
+use liushu_core::engine::{EngineManager, EngineWithRedb, InputMethodEngine, ShapeCodeEngine};
+use liushu_core::hmm::train;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -38,12 +37,11 @@ fn main() {
             train(corpus_file, save_to);
         }
         Commands::Repl => {
-            let db = Database::open(PROJECT_DIRS.target_dir.join("hmm_model.redb")).unwrap();
-            let pinyin = Hmm::new(db);
-
             let sunman = ShapeCodeEngine::default();
+            let sunman2 =
+                EngineWithRedb::with(PROJECT_DIRS.target_dir.join("sunman.redb")).unwrap();
             let mut engine_manager = EngineManager::from(
-                [Box::new(sunman), Box::new(pinyin)] as [Box<dyn InputMethodEngine>; 2]
+                [Box::new(sunman), Box::new(sunman2)] as [Box<dyn InputMethodEngine>; 2]
             );
 
             loop {
