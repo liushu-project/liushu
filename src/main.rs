@@ -38,8 +38,7 @@ fn main() {
         }
         Commands::Repl => {
             let sunman = ShapeCodeEngine::default();
-            let sunman2 =
-                EngineWithRedb::with(PROJECT_DIRS.target_dir.join("sunman.redb")).unwrap();
+            let sunman2 = EngineWithRedb::with(&PROJECT_DIRS.target_dir).unwrap();
             let mut engine_manager = EngineManager::from(
                 [Box::new(sunman), Box::new(sunman2)] as [Box<dyn InputMethodEngine>; 2]
             );

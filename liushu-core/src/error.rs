@@ -23,3 +23,15 @@ impl From<redb::Error> for LiushuError {
         LiushuError::Other(format!("redb error: {}", value))
     }
 }
+
+impl From<bincode::Error> for LiushuError {
+    fn from(value: bincode::Error) -> Self {
+        LiushuError::Other(format!("bincode error: {}", value))
+    }
+}
+
+impl From<std::io::Error> for LiushuError {
+    fn from(value: std::io::Error) -> Self {
+        LiushuError::Other(format!("io error: {}", value))
+    }
+}

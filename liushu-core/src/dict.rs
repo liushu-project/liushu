@@ -1,12 +1,13 @@
-use std::path::Path;
+use std::{fs::File, path::Path};
 
+use patricia_tree::PatriciaMap;
 use redb::TableDefinition;
 use rusqlite::{params, Connection};
 use serde::Deserialize;
 
-use crate::error::LiushuError;
+use crate::{dirs::PROJECT_DIRS, error::LiushuError};
 
-pub const DICTIONARY: TableDefinition<(&str, &str), (u64, Option<&str>)> =
+pub const DICTIONARY: TableDefinition<&str, (u64, Option<&str>)> =
     TableDefinition::new("dictionary");
 
 pub const CREATE_DICT_TABLE_SQL: &str = r#"
@@ -58,6 +59,7 @@ pub fn compile_dicts_to_db2(
 ) -> Result<(), LiushuError> {
     let table = redb::Database::create(db_path)?;
     let tx = table.begin_write()?;
+    let mut trie = PatriciaMap::new();
     {
         let mut dict_table = tx.open_table(DICTIONARY)?;
         for dict_path in dict_paths {
@@ -66,15 +68,27 @@ pub fn compile_dicts_to_db2(
                 .comment(Some(b'#'))
                 .from_path(dict_path)?;
             for result in rdr.deserialize() {
-                let dict_item: DictItem = result?;
-                dict_table.insert(
-                    &(dict_item.code.as_str(), dict_item.text.as_str()),
-                    (dict_item.weight, dict_item.comment.as_deref()),
-                )?;
+                let DictItem {
+                    text,
+                    code,
+                    weight,
+                    comment,
+                } = result?;
+                dict_table.insert(text.as_str(), (weight, comment.as_deref()))?;
+
+                if trie.get(&code).is_none() {
+                    trie.insert_str(code.as_str(), vec![text]);
+                } else if let Some(entry) = trie.get_mut(code.as_str()) {
+                    entry.push(text);
+                }
             }
         }
     }
     tx.commit()?;
+
+    // TODO: remove hard code
+    let trie_writer = File::create(PROJECT_DIRS.target_dir.join("sunman.trie"))?;
+    bincode::serialize_into(trie_writer, &trie)?;
 
     Ok(())
 }

@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, path::Path};
+use std::{collections::VecDeque, fs::File, path::Path};
 
 use patricia_tree::PatriciaMap;
 use redb::{Database, ReadableTable};
@@ -82,25 +82,10 @@ pub struct EngineWithRedb {
 
 impl EngineWithRedb {
     pub fn with(path: impl AsRef<Path>) -> Result<Self, LiushuError> {
-        let db = Database::open(path)?;
-        let mut trie = PatriciaMap::new();
-        {
-            let tx = db.begin_read()?;
-            let dictionary = tx.open_table(DICTIONARY)?;
-            dictionary
-                .iter()?
-                .map(|(key, _)| {
-                    let (code, text) = key.value();
-                    (code.to_owned(), text.to_owned())
-                })
-                .for_each(|(code, text)| {
-                    if trie.get(&code).is_none() {
-                        trie.insert_str(code.as_str(), vec![text]);
-                    } else if let Some(entry) = trie.get_mut(code.as_str()) {
-                        entry.push(text)
-                    }
-                });
-        }
+        let path = path.as_ref();
+        let db = Database::open(path.join("sunman.redb"))?;
+        let trie: PatriciaMap<Vec<String>> =
+            bincode::deserialize_from(File::open(path.join("sunman.trie"))?)?;
 
         Ok(Self { db, trie })
     }
@@ -117,7 +102,7 @@ impl InputMethodEngine for EngineWithRedb {
                 let dictionary = &dictionary;
                 value.iter().map(move |text| {
                     let code = String::from_utf8(key.clone()).unwrap();
-                    dictionary.get(&(code.as_str(), text.as_str())).map(|a| {
+                    dictionary.get(text.as_str()).map(|a| {
                         a.map(|v| {
                             let (weight, comment) = v.value();
                             SearchResultItem {
