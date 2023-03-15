@@ -22,3 +22,9 @@ members = [
     "liushu-core",
     "liushu-ls",
 ]
+
+[profile.bench]
+lto = true
+
+[profile.release]
+lto = true
