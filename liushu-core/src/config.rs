@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_dhall::StaticType;
 
 use crate::{
-    dict::{DictItem, DICTIONARY},
+    dict::{DictItem, DICTIONARY, CREATE_DICT_TABLE_SQL},
     dirs::PROJECT_DIRS,
     error::LiushuError,
 };
@@ -45,6 +45,7 @@ impl Formula {
         let self_config_dir = config_base_dir.as_ref().join(&self.id);
         let db_path = target_dir.as_ref().join(format!("{}.db3", self.id));
         let mut conn = Connection::open(db_path)?;
+        conn.execute(CREATE_DICT_TABLE_SQL, ())?;
         let tx = conn.transaction()?;
         for dict_path in &self.dictionaries {
             let dict_path = self_config_dir.join(dict_path);
@@ -60,6 +61,7 @@ impl Formula {
                 )?;
             }
         }
+        tx.commit()?;
         Ok(())
     }
 
