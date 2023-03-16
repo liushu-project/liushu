@@ -3,7 +3,7 @@ use std::io::{stdin, stdout, Write};
 use clap::{Parser, Subcommand};
 use liushu_core::deploy::deploy;
 use liushu_core::dirs::PROJECT_DIRS;
-use liushu_core::engine::{EngineManager, EngineWithRedb, InputMethodEngine, ShapeCodeEngine};
+use liushu_core::engine::{InputMethodEngine, NewStyleEngine};
 use liushu_core::hmm::train;
 
 #[derive(Parser, Debug)]
@@ -37,11 +37,8 @@ fn main() {
             train(corpus_file, save_to);
         }
         Commands::Repl => {
-            let sunman = ShapeCodeEngine::default();
-            let sunman2 = EngineWithRedb::with(&PROJECT_DIRS.target_dir).unwrap();
-            let mut engine_manager = EngineManager::from(
-                [Box::new(sunman), Box::new(sunman2)] as [Box<dyn InputMethodEngine>; 2]
-            );
+            let mut engine =
+                NewStyleEngine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
 
             loop {
                 print!("liushu> ");
@@ -51,15 +48,16 @@ fn main() {
                     Ok(_) => {
                         let input = input.trim();
 
-                        if input == "*shift" {
-                            engine_manager.set_active_engine(1);
+                        if input.starts_with("*use") {
+                            let formula_id = input.split(' ').last().unwrap();
+                            engine.set_active_formula(formula_id).unwrap();
                         }
 
                         if input == "*quit" {
                             break;
                         }
 
-                        engine_manager
+                        engine
                             .search(input)
                             .unwrap_or_else(|e| {
                                 println!("error: {}", e);
