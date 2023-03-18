@@ -5,6 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use itertools::Itertools;
 use patricia_tree::PatriciaMap;
 use redb::{Database, ReadableTable};
 
@@ -87,6 +88,7 @@ impl InputMethodEngine for Engine {
                 })
             })
             .filter_map(|v| v.ok().flatten())
+            .sorted_by_key(|i| i.weight)
             .collect())
     }
 }
