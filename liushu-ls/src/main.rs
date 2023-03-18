@@ -1,5 +1,5 @@
-use liushu_core::engine::{InputMethodEngine, NewStyleEngine};
 use liushu_core::dirs::PROJECT_DIRS;
+use liushu_core::engine::{Engine, InputMethodEngine};
 use tokio::sync::{Mutex, RwLock};
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
@@ -16,13 +16,12 @@ macro_rules! regex {
 struct Backend {
     client: Client,
     input: RwLock<String>,
-    engine: Mutex<NewStyleEngine>,
+    engine: Mutex<Engine>,
 }
 
 impl Backend {
     pub fn new(client: Client) -> Self {
-        let engine =
-            NewStyleEngine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
+        let engine = Engine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
         Self {
             client,
             input: RwLock::new(String::new()),

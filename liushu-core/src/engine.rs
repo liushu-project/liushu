@@ -17,14 +17,14 @@ pub trait InputMethodEngine {
 }
 
 #[derive(Debug)]
-pub struct NewStyleEngine {
+pub struct Engine {
     target_dir: PathBuf,
     state: State,
     db: Database,
     trie: PatriciaMap<Vec<String>>,
 }
 
-impl NewStyleEngine {
+impl Engine {
     pub fn init(
         data_dir: impl AsRef<Path>,
         target_dir: impl AsRef<Path>,
@@ -62,7 +62,7 @@ impl NewStyleEngine {
     }
 }
 
-impl InputMethodEngine for NewStyleEngine {
+impl InputMethodEngine for Engine {
     fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
         let tx = self.db.begin_read()?;
         let dictionary = tx.open_table(DICTIONARY)?;

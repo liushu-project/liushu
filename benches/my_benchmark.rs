@@ -1,11 +1,11 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use liushu_core::{
     dirs::PROJECT_DIRS,
-    engine::{InputMethodEngine, NewStyleEngine},
+    engine::{Engine, InputMethodEngine},
 };
 
 pub fn engine_benchmark(c: &mut Criterion) {
-    let engine = NewStyleEngine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
+    let engine = Engine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
     let test_inputs = ["a", "aac", "bo", "cfl", "df", "fojq", "qiq", "hir", "zzz"];
 
     let mut group = c.benchmark_group("Engine bench");

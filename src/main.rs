@@ -3,7 +3,7 @@ use std::io::{stdin, stdout, Write};
 use clap::{Parser, Subcommand};
 use liushu_core::deploy::deploy;
 use liushu_core::dirs::PROJECT_DIRS;
-use liushu_core::engine::{InputMethodEngine, NewStyleEngine};
+use liushu_core::engine::{Engine, InputMethodEngine};
 use liushu_core::hmm::train;
 
 #[derive(Parser, Debug)]
@@ -38,7 +38,7 @@ fn main() {
         }
         Commands::Repl => {
             let mut engine =
-                NewStyleEngine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
+                Engine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
 
             loop {
                 print!("liushu> ");
