@@ -6,12 +6,6 @@ pub enum LiushuError {
     Other(String),
 }
 
-impl From<rusqlite::Error> for LiushuError {
-    fn from(value: rusqlite::Error) -> Self {
-        LiushuError::Other(format!("sqlite error: {}", value))
-    }
-}
-
 impl From<csv::Error> for LiushuError {
     fn from(value: csv::Error) -> Self {
         LiushuError::Other(format!("csv error: {}", value))

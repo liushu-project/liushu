@@ -1,12 +1,11 @@
 use std::{fs::File, path::Path};
 
 use patricia_tree::PatriciaMap;
-use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use serde_dhall::StaticType;
 
 use crate::{
-    dict::{DictItem, CREATE_DICT_TABLE_SQL, DICTIONARY},
+    dict::{DictItem, DICTIONARY},
     dirs::PROJECT_DIRS,
     error::LiushuError,
 };
@@ -39,34 +38,6 @@ pub struct Formula {
 
 impl Formula {
     pub fn compile(
-        &self,
-        config_base_dir: impl AsRef<Path>,
-        target_dir: impl AsRef<Path>,
-    ) -> Result<(), LiushuError> {
-        let self_config_dir = config_base_dir.as_ref().join(&self.id);
-        let db_path = target_dir.as_ref().join(format!("{}.db3", self.id));
-        let mut conn = Connection::open(db_path)?;
-        conn.execute(CREATE_DICT_TABLE_SQL, ())?;
-        let tx = conn.transaction()?;
-        for dict_path in &self.dictionaries {
-            let dict_path = self_config_dir.join(dict_path);
-            let mut rdr = csv::ReaderBuilder::new()
-                .delimiter(b'\t')
-                .comment(Some(b'#'))
-                .from_path(dict_path)?;
-            for result in rdr.deserialize() {
-                let dict: DictItem = result?;
-                tx.execute(
-                    "INSERT INTO dict (text, code, weight, comment) VALUES (?1, ?2, ?3, ?4)",
-                    params![dict.text, dict.code, dict.weight, dict.comment],
-                )?;
-            }
-        }
-        tx.commit()?;
-        Ok(())
-    }
-
-    pub fn compile2(
         &self,
         config_base_dir: impl AsRef<Path>,
         target_dir: impl AsRef<Path>,

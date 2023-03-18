@@ -7,7 +7,6 @@ pub fn deploy() -> Result<(), LiushuError> {
 
     for formula in &config.formulas {
         formula.compile(&PROJECT_DIRS.config_dir, &PROJECT_DIRS.target_dir)?;
-        formula.compile2(&PROJECT_DIRS.config_dir, &PROJECT_DIRS.target_dir)?;
     }
 
     let state = State::from(config);
