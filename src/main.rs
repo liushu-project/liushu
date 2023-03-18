@@ -37,8 +37,7 @@ fn main() {
             train(corpus_file, save_to);
         }
         Commands::Repl => {
-            let mut engine =
-                Engine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
+            let mut engine = Engine::init(&PROJECT_DIRS.data_dir).unwrap();
 
             loop {
                 print!("liushu> ");

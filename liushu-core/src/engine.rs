@@ -26,12 +26,9 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn init(
-        data_dir: impl AsRef<Path>,
-        target_dir: impl AsRef<Path>,
-    ) -> Result<Self, LiushuError> {
+    pub fn init(data_dir: impl AsRef<Path>) -> Result<Self, LiushuError> {
         let data_dir = data_dir.as_ref();
-        let target_dir = target_dir.as_ref();
+        let target_dir = data_dir.join("target");
         let state: State = bincode::deserialize_from(File::open(data_dir.join(".state"))?)?;
 
         let active_formula = state.get_active_formula().unwrap();

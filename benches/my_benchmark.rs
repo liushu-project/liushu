@@ -5,7 +5,7 @@ use liushu_core::{
 };
 
 pub fn engine_benchmark(c: &mut Criterion) {
-    let engine = Engine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
+    let engine = Engine::init(&PROJECT_DIRS.data_dir).unwrap();
     let test_inputs = ["a", "aac", "bo", "cfl", "df", "fojq", "qiq", "hir", "zzz"];
 
     let mut group = c.benchmark_group("Engine bench");

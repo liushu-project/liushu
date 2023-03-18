@@ -21,7 +21,7 @@ struct Backend {
 
 impl Backend {
     pub fn new(client: Client) -> Self {
-        let engine = Engine::init(&PROJECT_DIRS.data_dir, &PROJECT_DIRS.target_dir).unwrap();
+        let engine = Engine::init(&PROJECT_DIRS.data_dir).unwrap();
         Self {
             client,
             input: RwLock::new(String::new()),
