@@ -38,7 +38,7 @@ impl Engine {
         )?)?;
 
         Ok(Self {
-            target_dir: target_dir.to_path_buf(),
+            target_dir,
             state,
             db,
             trie,
