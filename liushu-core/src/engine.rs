@@ -70,12 +70,12 @@ impl InputMethodEngine for Engine {
             .flat_map(|(key, value)| {
                 let dictionary = &dictionary;
                 value.iter().map(move |text| {
-                    let code = String::from_utf8(key.clone()).unwrap();
+                    let code = String::from_utf8_lossy(&key);
                     dictionary.get(text.as_str()).map(|a| {
                         a.map(|v| {
                             let (weight, comment) = v.value();
                             SearchResultItem {
-                                code: code.clone(),
+                                code: code.to_string(),
                                 text: text.clone(),
                                 weight,
                                 comment: comment.map(|c| c.to_owned()),
