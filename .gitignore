@@ -9,3 +9,6 @@
 **/.history
 
 .DS_Store
+
+# big file
+prelude/luna/corpus.tsv

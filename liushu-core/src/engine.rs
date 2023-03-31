@@ -9,7 +9,7 @@ use itertools::Itertools;
 use patricia_tree::PatriciaMap;
 use redb::{Database, ReadableTable};
 
-use crate::{dict::DICTIONARY, error::LiushuError};
+use crate::{dict::DICTIONARY, error::LiushuError, hmm::pinyin_to_sentence};
 
 use self::state::State;
 
@@ -64,7 +64,8 @@ impl InputMethodEngine for Engine {
     fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
         let tx = self.db.begin_read()?;
         let dictionary = tx.open_table(DICTIONARY)?;
-        Ok(self
+
+        let mut result: Vec<SearchResultItem> = self
             .trie
             .iter_prefix(code.as_bytes())
             .flat_map(|(key, value)| {
@@ -86,7 +87,35 @@ impl InputMethodEngine for Engine {
             })
             .filter_map(|v| v.ok().flatten())
             .sorted_by_key(|i| i.weight)
-            .collect())
+            .collect();
+
+        let active_formula = self.state.get_active_formula().unwrap();
+        if active_formula.use_hmm && code.len() > 6 {
+            // TODO: better split method
+            let mut pinyin_sequence = Vec::new();
+            let mut code = code;
+            let mut try_count = 0;
+            while !code.is_empty() && try_count < 15 {
+                if let Some((bytes, _)) = self.trie.get_longest_common_prefix(code) {
+                    let matched = String::from_utf8_lossy(bytes);
+                    let matched = matched.trim();
+                    pinyin_sequence.push(matched.to_string());
+                    code = &code[matched.len()..];
+                }
+                try_count += 1;
+            }
+            let predict = pinyin_to_sentence(&pinyin_sequence, &self.db, &self.trie)?;
+            result.insert(
+                0,
+                SearchResultItem {
+                    code: code.to_string(),
+                    text: predict,
+                    weight: 0,
+                    comment: None,
+                },
+            );
+        }
+        Ok(result)
     }
 }
 

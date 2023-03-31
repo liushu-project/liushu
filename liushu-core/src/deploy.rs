@@ -1,4 +1,4 @@
-use std::fs::{File, self};
+use std::fs::{self, File};
 
 use crate::{config::Config, dirs::PROJECT_DIRS, engine::state::State, error::LiushuError};
 

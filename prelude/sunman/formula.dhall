@@ -1,7 +1,7 @@
 let Prelude = ../package.dhall
 
-let sunman
-    = Prelude.Formula::{
+let sunman =
+      Prelude.Formula::{
       , id = "sunman"
       , name = Some "山人全息"
       , dictionaries =

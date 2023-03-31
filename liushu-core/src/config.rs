@@ -8,6 +8,7 @@ use crate::{
     dict::{DictItem, DICTIONARY},
     dirs::PROJECT_DIRS,
     error::LiushuError,
+    hmm::train_to_db,
 };
 
 #[derive(Debug, Serialize, Deserialize, StaticType)]
@@ -45,7 +46,7 @@ impl Formula {
         let self_config_dir = config_base_dir.as_ref().join(&self.id);
         let db_path = target_dir.as_ref().join(format!("{}.redb", self.id));
 
-        let table = redb::Database::create(db_path)?;
+        let table = redb::Database::open(db_path)?;
         let tx = table.begin_write()?;
         let mut trie = PatriciaMap::new();
         {
@@ -74,6 +75,11 @@ impl Formula {
             }
         }
         tx.commit()?;
+
+        if self.use_hmm {
+            // TODO: remove hardcord
+            train_to_db(self_config_dir.join("corpus.tsv"), &table, &mut trie)?;
+        }
 
         let trie_path = target_dir.as_ref().join(format!("{}.trie", self.id));
         let trie_writer = File::create(trie_path)?;
