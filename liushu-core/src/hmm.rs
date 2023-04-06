@@ -4,6 +4,7 @@ use std::io::BufReader;
 use std::path::Path;
 use std::{collections::HashMap, io::BufRead};
 
+use itertools::Itertools;
 use patricia_tree::PatriciaMap;
 use redb::{Database, ReadableTable, TableDefinition};
 
@@ -53,15 +54,17 @@ fn count_init_prob(corpus_file: impl AsRef<Path>, db: &Database) -> Result<(), L
         }
     }
 
-    let write_txn = db.begin_write()?;
-    {
-        let mut table = write_txn.open_table(INIT_TABLE)?;
-        for (key, value) in initial_counts {
-            let value = (value as f64 / total_count as f64).log(E);
-            table.insert(&key.as_str(), value)?;
+    for chunk in initial_counts.iter().chunks(1000).into_iter() {
+        let write_txn = db.begin_write()?;
+        {
+            let mut table = write_txn.open_table(INIT_TABLE)?;
+            for (key, &value) in chunk {
+                let value = (value as f64 / total_count as f64).log(E);
+                table.insert(key.as_str(), value)?;
+            }
         }
+        write_txn.commit()?;
     }
-    write_txn.commit()?;
 
     Ok(())
 }
@@ -94,18 +97,20 @@ fn count_trans_prob(corpus_file: impl AsRef<Path>, db: &Database) -> Result<(), 
         }
     }
 
-    let write_txn = db.begin_write()?;
-    {
-        let mut table = write_txn.open_table(TRANS_TABLE)?;
-        for (post, value) in trans_map {
-            let total = value.values().sum::<u64>();
-            for (pre, count) in value {
-                let prob = (count as f64 / total as f64).log(E);
-                table.insert((post.as_str(), pre.as_str()), prob)?;
+    for chunk in trans_map.iter().chunks(1000).into_iter() {
+        let write_txn = db.begin_write()?;
+        {
+            let mut table = write_txn.open_table(TRANS_TABLE)?;
+            for (post, value) in chunk {
+                let total = value.values().sum::<u64>();
+                for (pre, &count) in value {
+                    let prob = (count as f64 / total as f64).log(E);
+                    table.insert((post.as_str(), pre.as_str()), prob)?;
+                }
             }
         }
+        write_txn.commit()?;
     }
-    write_txn.commit()?;
 
     Ok(())
 }
@@ -142,18 +147,20 @@ fn count_emiss_prob(corpus_file: impl AsRef<Path>, db: &Database) -> Result<(), 
         }
     }
 
-    let write_txn = db.begin_write()?;
-    {
-        let mut table = write_txn.open_table(EMISS_TABLE)?;
-        for (word, pinyins) in emit_map {
-            let total = pinyins.values().sum::<u64>();
-            for (py, count) in pinyins {
-                let prob = (count as f64 / total as f64).log(E);
-                table.insert((word.as_str(), py.as_str()), prob)?;
+    for chunk in emit_map.iter().chunks(1000).into_iter() {
+        let write_txn = db.begin_write()?;
+        {
+            let mut table = write_txn.open_table(EMISS_TABLE)?;
+            for (word, pinyins) in chunk {
+                let total = pinyins.values().sum::<u64>();
+                for (py, &count) in pinyins {
+                    let prob = (count as f64 / total as f64).log(E);
+                    table.insert((word.as_str(), py.as_str()), prob)?;
+                }
             }
         }
+        write_txn.commit()?;
     }
-    write_txn.commit()?;
 
     Ok(())
 }
