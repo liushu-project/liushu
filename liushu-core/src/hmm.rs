@@ -160,9 +160,9 @@ fn count_emiss_prob(corpus_file: impl AsRef<Path>, db: &Database) -> Result<(), 
 
 fn save_trie(db: &Database, trie: &mut PatriciaMap<Vec<String>>) -> Result<(), LiushuError> {
     let mut idx = 0;
-    let read_txn = db.begin_read().unwrap();
+    let read_txn = db.begin_read()?;
     {
-        let emission_table = read_txn.open_table(EMISS_TABLE).unwrap();
+        let emission_table = read_txn.open_table(EMISS_TABLE)?;
         for (key, _) in emission_table.iter()? {
             let (word, py) = key.value().to_owned();
 
