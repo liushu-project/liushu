@@ -4,7 +4,6 @@ use clap::{Parser, Subcommand};
 use liushu_core::deploy::deploy;
 use liushu_core::dirs::PROJECT_DIRS;
 use liushu_core::engine::{Engine, InputMethodEngine};
-use liushu_core::hmm::train;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -17,11 +16,6 @@ struct Cli {
 enum Commands {
     Deploy,
 
-    #[command(arg_required_else_help = true)]
-    Train {
-        corpus_file: String,
-    },
-
     Repl,
 }
 
@@ -31,10 +25,6 @@ fn main() {
     match args.command {
         Commands::Deploy => {
             deploy().unwrap();
-        }
-        Commands::Train { corpus_file } => {
-            let save_to = &PROJECT_DIRS.target_dir.join("hmm_model.redb");
-            train(corpus_file, save_to);
         }
         Commands::Repl => {
             let mut engine = Engine::init(&PROJECT_DIRS.data_dir).unwrap();
