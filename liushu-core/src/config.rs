@@ -96,7 +96,7 @@ mod tests {
     fn test_prelude() {
         let config = Config::load_from_path("../prelude/main.dhall");
 
-        assert_eq!(config.formulas.len(), 2);
+        assert_eq!(config.formulas.len(), 3);
 
         let sunman = config.formulas[0].clone();
         assert_eq!(sunman.id, String::from("sunman"));
