@@ -46,7 +46,7 @@ impl Formula {
         let self_config_dir = config_base_dir.as_ref().join(&self.id);
         let db_path = target_dir.as_ref().join(format!("{}.redb", self.id));
 
-        let table = redb::Database::open(db_path)?;
+        let table = redb::Database::create(db_path)?;
         let tx = table.begin_write()?;
         let mut trie = PatriciaMap::new();
         {
