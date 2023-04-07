@@ -40,6 +40,7 @@ fn main() {
                         if input.starts_with("*use") {
                             let formula_id = input.split(' ').last().unwrap();
                             engine.set_active_formula(formula_id).unwrap();
+                            continue;
                         }
 
                         if input == "*quit" {
