@@ -36,7 +36,7 @@ impl Engine {
         let target_dir = data_dir.join("target");
         let state: State = bincode::deserialize_from(File::open(data_dir.join(".state"))?)?;
 
-        let active_formula = state.get_active_formula().unwrap();
+        let active_formula = state.get_active_formula();
         let db = Database::open(target_dir.join(format!("{}.redb", active_formula.id)))?;
         let trie: PatriciaMap<Vec<String>> = bincode::deserialize_from(File::open(
             target_dir.join(format!("{}.trie", active_formula.id)),
@@ -51,8 +51,12 @@ impl Engine {
     }
 
     pub fn set_active_formula(&mut self, formula_id: &str) -> Result<(), LiushuError> {
+        if formula_id == self.state.get_active_formula_id() {
+            return Ok(());
+        }
+
         self.state.set_active_formula(formula_id);
-        let active_formula = self.state.get_active_formula().unwrap();
+        let active_formula = self.state.get_active_formula();
         let db = Database::open(self.target_dir.join(format!("{}.redb", active_formula.id)))?;
         let trie: PatriciaMap<Vec<String>> = bincode::deserialize_from(File::open(
             self.target_dir.join(format!("{}.trie", active_formula.id)),
@@ -95,7 +99,7 @@ impl InputMethodEngine for Engine {
             .sorted_by_key(|i| std::cmp::Reverse(i.weight))
             .collect();
 
-        let active_formula = self.state.get_active_formula().unwrap();
+        let active_formula = self.state.get_active_formula();
         if active_formula.use_hmm && code.len() > 6 {
             let pinyin_sequence = segmentor::split_pinyin(code, &self.trie);
             let predict = pinyin_to_sentence(&pinyin_sequence, &self.db, &self.trie)?;

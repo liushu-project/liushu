@@ -11,14 +11,18 @@ pub struct State {
 }
 
 impl State {
+    pub fn get_active_formula_id(&self) -> &String {
+        &self.active_formula_id
+    }
+
     pub fn set_active_formula(&mut self, formula_id: &str) {
         if self.avaliable_formulas.get(formula_id).is_some() {
             self.active_formula_id = formula_id.to_owned();
         }
     }
 
-    pub fn get_active_formula(&self) -> Option<&Formula> {
-        self.avaliable_formulas.get(&self.active_formula_id)
+    pub fn get_active_formula(&self) -> &Formula {
+        &self.avaliable_formulas[&self.active_formula_id]
     }
 }
 
@@ -79,32 +83,32 @@ mod tests {
 
         assert_eq!(
             state.get_active_formula(),
-            Some(&Formula {
+            &Formula {
                 id: formula1_id.to_string(),
                 use_hmm: true,
                 name: None
-            })
+            }
         );
 
         state.set_active_formula(formula2_id);
         assert_eq!(
             state.get_active_formula(),
-            Some(&Formula {
+            &Formula {
                 id: formula2_id.to_string(),
                 use_hmm: false,
                 name: None
-            })
+            }
         );
 
         state.set_active_formula(formula3_id);
         assert_eq!(&state.active_formula_id, formula2_id);
         assert_eq!(
             state.get_active_formula(),
-            Some(&Formula {
+            &Formula {
                 id: formula2_id.to_string(),
                 use_hmm: false,
                 name: None
-            })
+            }
         );
     }
 }
