@@ -92,7 +92,7 @@ impl InputMethodEngine for Engine {
                 })
             })
             .filter_map(|v| v.ok().flatten())
-            .sorted_by_key(|i| i.weight)
+            .sorted_by_key(|i| std::cmp::Reverse(i.weight))
             .collect();
 
         let active_formula = self.state.get_active_formula().unwrap();
