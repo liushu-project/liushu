@@ -1,3 +1,4 @@
+mod candidates;
 mod segmentor;
 pub mod state;
 
@@ -12,10 +13,13 @@ use redb::{Database, ReadableTable};
 
 use crate::{dict::DICTIONARY, error::LiushuError, hmm::pinyin_to_sentence};
 
-use self::state::State;
+use self::{
+    candidates::{Candidate, CandidateSource},
+    state::State,
+};
 
 pub trait InputMethodEngine {
-    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError>;
+    fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError>;
 }
 
 #[derive(Debug)]
@@ -62,11 +66,11 @@ impl Engine {
 }
 
 impl InputMethodEngine for Engine {
-    fn search(&self, code: &str) -> Result<Vec<SearchResultItem>, LiushuError> {
+    fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError> {
         let tx = self.db.begin_read()?;
         let dictionary = tx.open_table(DICTIONARY)?;
 
-        let mut result: Vec<SearchResultItem> = self
+        let mut result: Vec<Candidate> = self
             .trie
             .iter_prefix(code.as_bytes())
             .flat_map(|(key, value)| {
@@ -76,11 +80,12 @@ impl InputMethodEngine for Engine {
                     dictionary.get(text.as_str()).map(|a| {
                         a.map(|v| {
                             let (weight, comment) = v.value();
-                            SearchResultItem {
+                            Candidate {
                                 code: code.to_string(),
                                 text: text.clone(),
                                 weight,
                                 comment: comment.map(|c| c.to_owned()),
+                                source: CandidateSource::CodeTable,
                             }
                         })
                     })
@@ -96,22 +101,15 @@ impl InputMethodEngine for Engine {
             let predict = pinyin_to_sentence(&pinyin_sequence, &self.db, &self.trie)?;
             result.insert(
                 0,
-                SearchResultItem {
+                Candidate {
                     code: code.to_string(),
                     text: predict,
-                    weight: 0,
+                    weight: u64::MAX,
                     comment: None,
+                    source: CandidateSource::Hmm,
                 },
             );
         }
         Ok(result)
     }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct SearchResultItem {
-    pub text: String,
-    pub code: String,
-    pub weight: u64,
-    pub comment: Option<String>,
 }
