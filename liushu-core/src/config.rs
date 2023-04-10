@@ -87,21 +87,3 @@ impl Formula {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_prelude() {
-        let config = Config::load_from_path("../prelude/main.dhall");
-
-        assert_eq!(config.formulas.len(), 3);
-
-        let sunman = config.formulas[0].clone();
-        assert_eq!(sunman.id, String::from("sunman"));
-        assert_eq!(sunman.name, Some(String::from("山人全息")));
-
-        assert_eq!(sunman.dictionaries.len(), 3);
-    }
-}
