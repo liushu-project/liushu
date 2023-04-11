@@ -1,8 +1,10 @@
 use std::{fs::File, path::Path};
 
+use data_encoding::HEXLOWER;
 use patricia_tree::PatriciaMap;
 use serde::{Deserialize, Serialize};
 use serde_dhall::StaticType;
+use sha2::{Digest, Sha256};
 
 use crate::{
     dict::{DictItem, DICTIONARY},
@@ -17,6 +19,15 @@ pub struct Config {
 }
 
 impl Config {
+    pub fn digest(&self) -> String {
+        let string = format!("{:?}", self);
+        let mut hasher = Sha256::new();
+        hasher.update(string.as_bytes());
+        let result = hasher.finalize();
+
+        HEXLOWER.encode(result.as_ref())
+    }
+
     pub fn load() -> Self {
         Self::load_from_path(PROJECT_DIRS.config_dir.join("main.dhall"))
     }
@@ -34,7 +45,7 @@ pub struct Formula {
     pub id: String,
     pub name: Option<String>,
     pub use_hmm: bool,
-    dictionaries: Vec<String>,
+    pub dictionaries: Vec<String>,
 }
 
 impl Formula {

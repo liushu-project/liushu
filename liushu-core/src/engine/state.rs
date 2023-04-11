@@ -8,6 +8,7 @@ use crate::config::Config;
 pub struct State {
     active_formula_id: String,
     avaliable_formulas: HashMap<String, Formula>,
+    pub digest: String,
 }
 
 impl State {
@@ -33,8 +34,8 @@ pub struct Formula {
     pub use_hmm: bool,
 }
 
-impl From<Config> for State {
-    fn from(config: Config) -> Self {
+impl From<&Config> for State {
+    fn from(config: &Config) -> Self {
         Self {
             active_formula_id: config.formulas[0].id.clone(),
             avaliable_formulas: HashMap::from_iter(config.formulas.iter().map(|f| {
@@ -47,6 +48,7 @@ impl From<Config> for State {
                     },
                 )
             })),
+            digest: config.digest(),
         }
     }
 }
@@ -79,6 +81,7 @@ mod tests {
                     },
                 ),
             ]),
+            digest: "".to_string(),
         };
 
         assert_eq!(
