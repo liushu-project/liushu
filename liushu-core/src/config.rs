@@ -1,4 +1,8 @@
-use std::{fs::File, path::Path};
+use std::{
+    fs::File,
+    io::{BufReader, Read},
+    path::{Path, PathBuf},
+};
 
 use data_encoding::HEXLOWER;
 use patricia_tree::PatriciaMap;
@@ -97,4 +101,32 @@ impl Formula {
         bincode::serialize_into(trie_writer, &trie)?;
         Ok(())
     }
+
+    pub fn get_dictionaries_digest(&self, config_dir: impl AsRef<Path>) -> Option<String> {
+        sha256_files(
+            self.dictionaries
+                .iter()
+                .map(|p| config_dir.as_ref().join(&self.id).join(p)),
+        )
+        .ok()
+    }
+}
+
+fn sha256_files(paths: impl IntoIterator<Item = PathBuf>) -> Result<String, LiushuError> {
+    let mut hasher = Sha256::new();
+    for path in paths {
+        let input = File::open(path)?;
+        let mut reader = BufReader::new(input);
+
+        let mut buffer = [0; 1024];
+        loop {
+            let count = reader.read(&mut buffer)?;
+            if count == 0 {
+                break;
+            }
+            hasher.update(&buffer[..count]);
+        }
+    }
+    let digest = hasher.finalize();
+    Ok(HEXLOWER.encode(digest.as_ref()))
 }

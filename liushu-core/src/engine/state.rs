@@ -25,6 +25,22 @@ impl State {
     pub fn get_active_formula(&self) -> &Formula {
         &self.avaliable_formulas[&self.active_formula_id]
     }
+
+    pub fn get_avaliable_formula(&self, formula_id: &str) -> Option<&Formula> {
+        self.avaliable_formulas.get(formula_id)
+    }
+
+    pub fn set_dictionaries_digest(&mut self, formula_id: &str, digest: &str) {
+        if let Some(x) = self.avaliable_formulas.get_mut(formula_id) {
+            x.dict_digest = digest.to_string();
+        }
+    }
+
+    pub fn set_hmm_model_digest(&mut self, formula_id: &str, digest: &str) {
+        if let Some(x) = self.avaliable_formulas.get_mut(formula_id) {
+            x.hmm_model_digest = digest.to_string();
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Default, Deserialize, Serialize)]
@@ -32,6 +48,8 @@ pub struct Formula {
     pub id: String,
     pub name: Option<String>,
     pub use_hmm: bool,
+    pub hmm_model_digest: String,
+    pub dict_digest: String,
 }
 
 impl From<&Config> for State {
@@ -45,6 +63,7 @@ impl From<&Config> for State {
                         id: f.id.clone(),
                         name: f.name.clone(),
                         use_hmm: f.use_hmm,
+                        ..Default::default()
                     },
                 )
             })),
@@ -89,7 +108,8 @@ mod tests {
             &Formula {
                 id: formula1_id.to_string(),
                 use_hmm: true,
-                name: None
+                name: None,
+                ..Default::default()
             }
         );
 
@@ -99,7 +119,8 @@ mod tests {
             &Formula {
                 id: formula2_id.to_string(),
                 use_hmm: false,
-                name: None
+                name: None,
+                ..Default::default()
             }
         );
 
@@ -110,7 +131,8 @@ mod tests {
             &Formula {
                 id: formula2_id.to_string(),
                 use_hmm: false,
-                name: None
+                name: None,
+                ..Default::default()
             }
         );
     }
