@@ -24,7 +24,7 @@ fn main() {
 
     match args.command {
         Commands::Deploy => {
-            deploy().unwrap();
+            deploy(&PROJECT_DIRS).unwrap();
         }
         Commands::Repl => {
             let mut engine = Engine::init(&PROJECT_DIRS.data_dir).unwrap();

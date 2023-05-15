@@ -12,7 +12,7 @@ use sha2::{Digest, Sha256};
 
 use crate::{
     dict::{DictItem, DICTIONARY},
-    dirs::PROJECT_DIRS,
+    dirs::{MyProjectDirs, PROJECT_DIRS},
     error::LiushuError,
     hmm::train_to_db,
 };
@@ -53,13 +53,9 @@ pub struct Formula {
 }
 
 impl Formula {
-    pub fn compile(
-        &self,
-        config_base_dir: impl AsRef<Path>,
-        target_dir: impl AsRef<Path>,
-    ) -> Result<(), LiushuError> {
-        let self_config_dir = config_base_dir.as_ref().join(&self.id);
-        let db_path = target_dir.as_ref().join(format!("{}.redb", self.id));
+    pub fn compile(&self, proj_dirs: &MyProjectDirs) -> Result<(), LiushuError> {
+        let self_config_dir = &proj_dirs.config_dir.join(&self.id);
+        let db_path = &proj_dirs.target_dir.join(format!("{}.redb", self.id));
 
         let table = redb::Database::create(db_path)?;
         let tx = table.begin_write()?;
@@ -96,7 +92,7 @@ impl Formula {
             train_to_db(self_config_dir.join("corpus.tsv"), &table, &mut trie)?;
         }
 
-        let trie_path = target_dir.as_ref().join(format!("{}.trie", self.id));
+        let trie_path = &proj_dirs.target_dir.join(format!("{}.trie", self.id));
         let trie_writer = File::create(trie_path)?;
         bincode::serialize_into(trie_writer, &trie)?;
         Ok(())
