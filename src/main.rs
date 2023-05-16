@@ -27,7 +27,7 @@ fn main() {
             deploy(&PROJECT_DIRS).unwrap();
         }
         Commands::Repl => {
-            let mut engine = Engine::init(&PROJECT_DIRS.data_dir).unwrap();
+            let mut engine = Engine::init(&PROJECT_DIRS).unwrap();
 
             loop {
                 print!("liushu> ");

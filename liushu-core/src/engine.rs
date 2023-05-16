@@ -2,16 +2,13 @@ mod candidates;
 mod segmentor;
 pub mod state;
 
-use std::{
-    fs::File,
-    path::{Path, PathBuf},
-};
+use std::{fs::File, path::PathBuf};
 
 use itertools::Itertools;
 use patricia_tree::PatriciaMap;
 use redb::{Database, ReadableTable};
 
-use crate::{dict::DICTIONARY, error::LiushuError, hmm::pinyin_to_sentence};
+use crate::{dict::DICTIONARY, dirs::MyProjectDirs, error::LiushuError, hmm::pinyin_to_sentence};
 
 use self::{
     candidates::{Candidate, CandidateSource},
@@ -31,19 +28,24 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn init(data_dir: impl AsRef<Path>) -> Result<Self, LiushuError> {
-        let data_dir = data_dir.as_ref();
-        let target_dir = data_dir.join("target");
-        let state: State = bincode::deserialize_from(File::open(data_dir.join(".state"))?)?;
+    pub fn init(proj_dirs: &MyProjectDirs) -> Result<Self, LiushuError> {
+        let state: State =
+            bincode::deserialize_from(File::open(proj_dirs.data_dir.join(".state"))?)?;
 
         let active_formula = state.get_active_formula();
-        let db = Database::open(target_dir.join(format!("{}.redb", active_formula.id)))?;
+        let db = Database::open(
+            proj_dirs
+                .target_dir
+                .join(format!("{}.redb", active_formula.id)),
+        )?;
         let trie: PatriciaMap<Vec<String>> = bincode::deserialize_from(File::open(
-            target_dir.join(format!("{}.trie", active_formula.id)),
+            proj_dirs
+                .target_dir
+                .join(format!("{}.trie", active_formula.id)),
         )?)?;
 
         Ok(Self {
-            target_dir,
+            target_dir: proj_dirs.target_dir.clone(),
             state,
             db,
             trie,
