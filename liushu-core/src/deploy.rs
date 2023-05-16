@@ -7,7 +7,10 @@ pub fn deploy(proj_dirs: &MyProjectDirs) -> Result<(), LiushuError> {
     let mut state = State::from(&config);
 
     let state_path = proj_dirs.data_dir.join(".state");
-    let old_state: State = bincode::deserialize_from(File::open(&state_path)?)?;
+    let old_state: State = File::open(&state_path)
+        .map_err(LiushuError::from)
+        .and_then(|r| bincode::deserialize_from(r).map_err(LiushuError::from))
+        .unwrap_or(State::default());
 
     fs::create_dir_all(&proj_dirs.target_dir)?;
 
