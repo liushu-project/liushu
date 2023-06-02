@@ -170,7 +170,8 @@ fn save_trie(db: &Database, trie: &mut PatriciaMap<Vec<String>>) -> Result<(), L
     let read_txn = db.begin_read()?;
     {
         let emission_table = read_txn.open_table(EMISS_TABLE)?;
-        for (key, _) in emission_table.iter()? {
+        for value_guard in emission_table.iter()? {
+            let (key, _) = value_guard?;
             let (word, py) = key.value().to_owned();
 
             let py: String = py.split_whitespace().collect();
