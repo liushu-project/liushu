@@ -1,4 +1,4 @@
-mod candidates;
+pub mod candidates;
 mod segmentor;
 pub mod state;
 

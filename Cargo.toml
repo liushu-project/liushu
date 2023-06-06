@@ -21,6 +21,8 @@ harness = false
 members = [
     "liushu-core",
     "liushu-ls",
+    "liushu-ffi",
+    "uniffi-bindgen",
 ]
 
 [profile.bench]
