@@ -1,5 +1,6 @@
 use patricia_tree::PatriciaMap;
 
+#[allow(dead_code)]
 pub fn split_pinyin(code: &str, trie: &PatriciaMap<Vec<String>>) -> Vec<String> {
     let mut syllables = Vec::new();
     let mut remaining = code;

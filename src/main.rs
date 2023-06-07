@@ -27,7 +27,7 @@ fn main() {
             deploy(&PROJECT_DIRS).unwrap();
         }
         Commands::Repl => {
-            let mut engine = Engine::init(&PROJECT_DIRS).unwrap();
+            let engine = Engine::init(&PROJECT_DIRS).unwrap();
 
             loop {
                 print!("liushu> ");
@@ -36,12 +36,6 @@ fn main() {
                 match stdin().read_line(&mut input) {
                     Ok(_) => {
                         let input = input.trim();
-
-                        if input.starts_with("*use") {
-                            let formula_id = input.split(' ').last().unwrap();
-                            engine.set_active_formula(formula_id).unwrap();
-                            continue;
-                        }
 
                         if input == "*quit" {
                             break;
