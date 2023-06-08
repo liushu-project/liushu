@@ -28,8 +28,10 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.elliot00.liushu.KeyboardView
+import com.elliot00.liushu.uniffi.Engine
 
 class ImeService : LifecycleInputMethodService(), ViewModelStoreOwner, SavedStateRegistryOwner {
+    val engine = Engine()
     override fun onCreateInputView(): View {
         val view = KeyboardView(this)
 

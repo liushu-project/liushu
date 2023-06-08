@@ -17,6 +17,7 @@
 
 package com.elliot00.liushu
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,9 +41,9 @@ import com.elliot00.liushu.service.ImeService
 @Composable
 fun KeyboardScreen() {
     val keysMatrix = arrayOf(
-        arrayOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"),
-        arrayOf("A", "S", "D", "F", "G", "H", "J", "K", "L"),
-        arrayOf("Z", "X", "C", "V", "B", "N", "M")
+        arrayOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p"),
+        arrayOf("a", "s", "d", "f", "g", "h", "j", "k", "l"),
+        arrayOf("z", "x", "c", "v", "b", "n", "m")
     )
     Column(
         modifier = Modifier
@@ -92,10 +93,11 @@ fun KeyboardKey(
                 .padding(2.dp)
                 .border(1.dp, Color.Black)
                 .clickable(interactionSource = interactionSource, indication = null) {
-                    (ctx as ImeService).currentInputConnection.commitText(
-                        keyboardKey,
-                        keyboardKey
-                            .length
+                    val result = (ctx as ImeService).engine.search(keyboardKey)
+                    val text = result[0].text
+                    ctx.currentInputConnection.commitText(
+                        text,
+                        text.length
                     )
                 }
                 .background(Color.White)

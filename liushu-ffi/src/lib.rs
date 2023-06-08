@@ -13,10 +13,11 @@ trait FfiConstructor {
 
 impl FfiConstructor for Engine {
     fn new() -> Self {
+        // TODO: remove hardcode
         let my_dir = MyProjectDirs {
-            data_dir: PathBuf::from("./Data"),
-            target_dir: PathBuf::from("./Target"),
-            config_dir: PathBuf::from("./Config"),
+            data_dir: PathBuf::from("/data/data/com.elliot00.liushu/files"),
+            target_dir: PathBuf::from("/data/data/com.elliot00.liushu/files"),
+            config_dir: PathBuf::from("/data/data/com.elliot00.liushu/files"),
         };
 
         Engine::init(&my_dir).unwrap()
