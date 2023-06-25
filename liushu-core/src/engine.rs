@@ -58,6 +58,7 @@ impl InputMethodEngine for Engine {
                 })
             })
             .filter_map(|v| v.ok().flatten())
+            .unique_by(|i| i.text.clone())
             .sorted_by_key(|i| std::cmp::Reverse(i.weight))
             .collect();
 
