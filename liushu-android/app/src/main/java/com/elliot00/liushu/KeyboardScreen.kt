@@ -17,16 +17,24 @@
 
 package com.elliot00.liushu
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,25 +44,56 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.elliot00.liushu.service.ImeService
+import com.elliot00.liushu.uniffi.Candidate
 
 @Preview
 @Composable
 fun KeyboardScreen() {
+    var input by remember {
+        mutableStateOf("")
+    }
+
+    var candidates by remember {
+        mutableStateOf(listOf<Candidate>())
+    }
+
+    val ctx = LocalContext.current
     val keysMatrix = arrayOf(
         arrayOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p"),
         arrayOf("a", "s", "d", "f", "g", "h", "j", "k", "l"),
         arrayOf("z", "x", "c", "v", "b", "n", "m")
     )
+
     Column(
         modifier = Modifier
             .background(Color(0xFF9575CD))
             .fillMaxWidth()
     ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            candidates.forEach { candidate ->
+                Text(text = candidate.text, modifier = Modifier.clickable {
+                    (ctx as ImeService).currentInputConnection.commitText(
+                        candidate.text,
+                        candidate.text.length
+                    )
+                    input = ""
+                    candidates = listOf()
+                })
+            }
+        }
         keysMatrix.forEach { row ->
             FixedHeightBox(modifier = Modifier.fillMaxWidth(), height = 56.dp) {
                 Row(Modifier) {
                     row.forEach { key ->
-                        KeyboardKey(keyboardKey = key, modifier = Modifier.weight(1f))
+                        KeyboardKey(keyboardKey = key, modifier = Modifier.weight(1f)) {
+                            input += it
+                            candidates = (ctx as ImeService).engine.search(input).subList(0, 8)
+                        }
                     }
                 }
             }
@@ -80,11 +119,11 @@ fun FixedHeightBox(modifier: Modifier, height: Dp, content: @Composable () -> Un
 @Composable
 fun KeyboardKey(
     keyboardKey: String,
-    modifier: Modifier
+    modifier: Modifier,
+    onKeyPressed: (String) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed = interactionSource.collectIsPressedAsState()
-    val ctx = LocalContext.current
     Box(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
         Text(
             keyboardKey,
@@ -93,12 +132,7 @@ fun KeyboardKey(
                 .padding(2.dp)
                 .border(1.dp, Color.Black)
                 .clickable(interactionSource = interactionSource, indication = null) {
-                    val result = (ctx as ImeService).engine.search(keyboardKey)
-                    val text = result[0].text
-                    ctx.currentInputConnection.commitText(
-                        text,
-                        text.length
-                    )
+                    onKeyPressed(keyboardKey)
                 }
                 .background(Color.White)
                 .padding(
