@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,13 +71,12 @@ fun KeyboardScreen() {
             .background(Color(0xFF9575CD))
             .fillMaxWidth()
     ) {
-        Row(
+        LazyRow(
             modifier = Modifier
                 .padding(horizontal = 12.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
         ) {
-            candidates.forEach { candidate ->
+            items(candidates) { candidate ->
                 Text(text = candidate.text, modifier = Modifier.clickable {
                     (ctx as ImeService).currentInputConnection.commitText(
                         candidate.text,
@@ -92,7 +93,7 @@ fun KeyboardScreen() {
                     row.forEach { key ->
                         KeyboardKey(keyboardKey = key, modifier = Modifier.weight(1f)) {
                             input += it
-                            candidates = (ctx as ImeService).engine.search(input).subList(0, 8)
+                            candidates = (ctx as ImeService).engine.search(input)
                         }
                     }
                 }
