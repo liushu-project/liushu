@@ -15,16 +15,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.elliot00.liushu
+package com.elliot00.liushu.input
 
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.AbstractComposeView
+import com.elliot00.liushu.ui.theme.LiushuTheme
 
-class KeyboardView(context: Context) : AbstractComposeView(context) {
+class InputView(context: Context) : AbstractComposeView(context) {
 
     @Composable
     override fun Content() {
-        KeyboardScreen()
+        LiushuTheme {
+            InputScreen()
+        }
     }
 }

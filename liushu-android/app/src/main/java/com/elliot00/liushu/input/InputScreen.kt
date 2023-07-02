@@ -15,7 +15,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.elliot00.liushu
+package com.elliot00.liushu.input
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,7 +51,7 @@ import com.elliot00.liushu.uniffi.Candidate
 
 @Preview
 @Composable
-fun KeyboardScreen() {
+fun InputScreen() {
     var input by remember {
         mutableStateOf("")
     }
