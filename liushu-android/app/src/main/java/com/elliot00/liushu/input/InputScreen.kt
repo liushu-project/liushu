@@ -17,6 +17,7 @@
 
 package com.elliot00.liushu.input
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,15 +53,9 @@ import com.elliot00.liushu.uniffi.Candidate
 @Preview
 @Composable
 fun InputScreen() {
-    var input by remember {
-        mutableStateOf("")
-    }
-
-    var candidates by remember {
-        mutableStateOf(listOf<Candidate>())
-    }
-
     val ctx = LocalContext.current
+    val inputState = rememberInputState(context = ctx)
+
     val keysMatrix = arrayOf(
         arrayOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p"),
         arrayOf("a", "s", "d", "f", "g", "h", "j", "k", "l"),
@@ -77,14 +72,9 @@ fun InputScreen() {
                 .padding(horizontal = 12.dp)
                 .fillMaxWidth(),
         ) {
-            items(candidates) { candidate ->
+            items(inputState.candidates) { candidate ->
                 Text(text = candidate.text, modifier = Modifier.clickable {
-                    (ctx as ImeService).currentInputConnection.commitText(
-                        candidate.text,
-                        candidate.text.length
-                    )
-                    input = ""
-                    candidates = listOf()
+                    inputState.commitCandidate(candidate)
                 })
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -94,8 +84,7 @@ fun InputScreen() {
                 Row(Modifier) {
                     row.forEach { key ->
                         KeyboardKey(keyboardKey = key, modifier = Modifier.weight(1f)) {
-                            input += it
-                            candidates = (ctx as ImeService).engine.search(input)
+                            inputState.handleKey(it)
                         }
                     }
                 }
@@ -163,3 +152,30 @@ fun KeyboardKey(
         }
     }
 }
+
+class InputStateHolder(private val context: Context) {
+    private var input by mutableStateOf("")
+
+    var candidates by mutableStateOf(listOf<Candidate>())
+        private set
+
+    fun handleKey(key: String) {
+        input += key
+        candidates = (context as ImeService).engine.search(input)
+    }
+
+    fun commitCandidate(candidate: Candidate) {
+        (context as ImeService).currentInputConnection.commitText(
+            candidate.text,
+            candidate.text.length
+        )
+        input = ""
+        candidates = listOf()
+    }
+}
+
+@Composable
+fun rememberInputState(context: Context): InputStateHolder =
+    remember(context) {
+        InputStateHolder(context)
+    }
