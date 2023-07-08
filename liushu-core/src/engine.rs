@@ -33,6 +33,10 @@ impl Engine {
 
 impl InputMethodEngine for Engine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError> {
+        if code.is_empty() {
+            return Ok(vec![]);
+        }
+
         let tx = self.db.begin_read()?;
         let dictionary = tx.open_table(DICTIONARY)?;
 
