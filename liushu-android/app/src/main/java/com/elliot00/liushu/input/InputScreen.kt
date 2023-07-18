@@ -111,9 +111,13 @@ fun InputScreen() {
         }
         keysMatrix.forEach { row ->
             FixedHeightBox(modifier = Modifier.fillMaxWidth(), height = 56.dp) {
-                Row(Modifier, horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    Modifier,
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     row.forEach { data ->
-                        Key(data, inputState)
+                        Key(data, onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) })
                     }
                 }
             }
