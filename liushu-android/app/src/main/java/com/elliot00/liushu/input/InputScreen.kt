@@ -20,9 +20,7 @@ package com.elliot00.liushu.input
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,16 +34,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.elliot00.liushu.input.keyboard.Key
 import com.elliot00.liushu.input.keyboard.KeyCode
-import com.elliot00.liushu.input.keyboard.KeyData
+import com.elliot00.liushu.input.keyboard.Keyboard
 import com.elliot00.liushu.service.ImeService
 import com.elliot00.liushu.uniffi.Candidate
 
@@ -54,43 +48,6 @@ import com.elliot00.liushu.uniffi.Candidate
 fun InputScreen() {
     val ctx = LocalContext.current
     val inputState = rememberInputState(context = ctx)
-
-    val keysMatrix = arrayOf(
-        arrayOf(
-            KeyData(label = "q", keyCode = KeyCode.Alpha("q")),
-            KeyData(label = "w", keyCode = KeyCode.Alpha("w")),
-            KeyData(label = "e", keyCode = KeyCode.Alpha("e")),
-            KeyData(label = "r", keyCode = KeyCode.Alpha("r")),
-            KeyData(label = "t", keyCode = KeyCode.Alpha("t")),
-            KeyData(label = "y", keyCode = KeyCode.Alpha("y")),
-            KeyData(label = "u", keyCode = KeyCode.Alpha("u")),
-            KeyData(label = "i", keyCode = KeyCode.Alpha("i")),
-            KeyData(label = "o", keyCode = KeyCode.Alpha("o")),
-            KeyData(label = "p", keyCode = KeyCode.Alpha("p"))
-        ),
-        arrayOf(
-            KeyData(label = "a", keyCode = KeyCode.Alpha("a")),
-            KeyData(label = "s", keyCode = KeyCode.Alpha("s")),
-            KeyData(label = "d", keyCode = KeyCode.Alpha("d")),
-            KeyData(label = "f", keyCode = KeyCode.Alpha("f")),
-            KeyData(label = "g", keyCode = KeyCode.Alpha("g")),
-            KeyData(label = "h", keyCode = KeyCode.Alpha("h")),
-            KeyData(label = "j", keyCode = KeyCode.Alpha("j")),
-            KeyData(label = "k", keyCode = KeyCode.Alpha("k")),
-            KeyData(label = "l", keyCode = KeyCode.Alpha("l"))
-        ),
-        arrayOf(
-            KeyData(label = "S", keyCode = KeyCode.Shift),
-            KeyData(label = "z", keyCode = KeyCode.Alpha("z")),
-            KeyData(label = "x", keyCode = KeyCode.Alpha("x")),
-            KeyData(label = "c", keyCode = KeyCode.Alpha("c")),
-            KeyData(label = "v", keyCode = KeyCode.Alpha("v")),
-            KeyData(label = "b", keyCode = KeyCode.Alpha("b")),
-            KeyData(label = "n", keyCode = KeyCode.Alpha("n")),
-            KeyData(label = "m", keyCode = KeyCode.Alpha("m")),
-            KeyData(label = "D", keyCode = KeyCode.Delete),
-        )
-    )
 
     Column(
         modifier = Modifier
@@ -109,34 +66,7 @@ fun InputScreen() {
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }
-        keysMatrix.forEach { row ->
-            FixedHeightBox(modifier = Modifier.fillMaxWidth(), height = 56.dp) {
-                Row(
-                    Modifier,
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    row.forEach { data ->
-                        Key(data, onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) })
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun FixedHeightBox(modifier: Modifier, height: Dp, content: @Composable () -> Unit) {
-    Layout(modifier = modifier, content = content) { measurables, constraints ->
-        val placeables = measurables.map { measurable ->
-            measurable.measure(constraints)
-        }
-        val h = height.roundToPx()
-        layout(constraints.maxWidth, h) {
-            placeables.forEach { placeable ->
-                placeable.place(x = 0, y = kotlin.math.min(0, h - placeable.height))
-            }
-        }
+        Keyboard(onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) })
     }
 }
 
