@@ -21,4 +21,8 @@ sealed class KeyCode {
     data class Alpha(val code: String) : KeyCode()
     object Delete : KeyCode()
     object Shift : KeyCode()
+    object Comma : KeyCode()
+    object Period : KeyCode()
+    object Space : KeyCode()
+    object Enter : KeyCode()
 }

@@ -53,7 +53,7 @@ fun Keyboard(onKeyPressed: (KeyCode) -> Unit) {
             KeyData(label = "l", keyCode = KeyCode.Alpha("l"))
         ),
         arrayOf(
-            KeyData(label = "S", keyCode = KeyCode.Shift),
+            KeyData(label = "shift", keyCode = KeyCode.Shift),
             KeyData(label = "z", keyCode = KeyCode.Alpha("z")),
             KeyData(label = "x", keyCode = KeyCode.Alpha("x")),
             KeyData(label = "c", keyCode = KeyCode.Alpha("c")),
@@ -61,7 +61,13 @@ fun Keyboard(onKeyPressed: (KeyCode) -> Unit) {
             KeyData(label = "b", keyCode = KeyCode.Alpha("b")),
             KeyData(label = "n", keyCode = KeyCode.Alpha("n")),
             KeyData(label = "m", keyCode = KeyCode.Alpha("m")),
-            KeyData(label = "D", keyCode = KeyCode.Delete),
+            KeyData(label = "删除", keyCode = KeyCode.Delete),
+        ),
+        arrayOf(
+            KeyData(label = "，", keyCode = KeyCode.Comma),
+            KeyData(label = "　", keyCode = KeyCode.Space),
+            KeyData(label = "。", keyCode = KeyCode.Period),
+            KeyData(label = "回车", keyCode = KeyCode.Enter)
         )
     )
 

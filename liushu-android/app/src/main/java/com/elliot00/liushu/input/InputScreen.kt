@@ -18,6 +18,7 @@
 package com.elliot00.liushu.input
 
 import android.content.Context
+import android.view.inputmethod.EditorInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -77,14 +78,38 @@ class InputStateHolder(private val context: Context) {
         private set
 
     fun handleKeyCode(keyCode: KeyCode) {
+        val currentInputConnection = (context as ImeService).currentInputConnection
         when (keyCode) {
             is KeyCode.Alpha -> handleAlphaCode(keyCode.code)
             is KeyCode.Delete -> {
                 if (input.isNotEmpty()) {
                     input = input.dropLast(1)
-                    candidates = (context as ImeService).engine.search(input)
+                    candidates = context.engine.search(input)
                 } else {
-                    (context as ImeService).currentInputConnection.deleteSurroundingText(1, 0)
+                    currentInputConnection.deleteSurroundingText(1, 0)
+                }
+            }
+
+            is KeyCode.Comma -> {
+                // TODO: shift state
+                currentInputConnection.commitText("，", 1)
+            }
+
+            is KeyCode.Space -> {
+                currentInputConnection.commitText("　", 1)
+            }
+
+            is KeyCode.Period -> {
+                currentInputConnection.commitText("。", 1)
+            }
+
+            is KeyCode.Enter -> {
+                if (input.isNotEmpty()) {
+                    currentInputConnection.commitText(input, input.length)
+                    input = ""
+                    candidates = listOf()
+                } else {
+                    currentInputConnection.performEditorAction(EditorInfo.IME_ACTION_GO)
                 }
             }
 
