@@ -105,9 +105,7 @@ class InputStateHolder(private val context: Context) {
 
             is KeyCode.Enter -> {
                 if (input.isNotEmpty()) {
-                    currentInputConnection.commitText(input, input.length)
-                    input = ""
-                    candidates = listOf()
+                    commitText(input)
                 } else {
                     currentInputConnection.performEditorAction(EditorInfo.IME_ACTION_GO)
                 }
@@ -118,9 +116,13 @@ class InputStateHolder(private val context: Context) {
     }
 
     fun commitCandidate(candidate: Candidate) {
+        commitText(candidate.text)
+    }
+
+    private fun commitText(text: String) {
         (context as ImeService).currentInputConnection.commitText(
-            candidate.text,
-            candidate.text.length
+            text,
+            text.length
         )
         input = ""
         candidates = listOf()
