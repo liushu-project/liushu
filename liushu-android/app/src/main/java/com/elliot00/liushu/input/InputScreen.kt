@@ -73,6 +73,7 @@ fun InputScreen() {
 
 class InputStateHolder(private val context: Context) {
     private var input by mutableStateOf("")
+    private var isCapital by mutableStateOf(false)
 
     var candidates by mutableStateOf(listOf<Candidate>())
         private set
@@ -111,6 +112,12 @@ class InputStateHolder(private val context: Context) {
                 }
             }
 
+            is KeyCode.Shift -> {
+                if (input.isEmpty()) {
+                    isCapital = true
+                }
+            }
+
             else -> {}
         }
     }
@@ -129,6 +136,12 @@ class InputStateHolder(private val context: Context) {
     }
 
     private fun handleAlphaCode(code: String) {
+        if (isCapital) {
+            commitText(code.uppercase())
+            isCapital = false
+            return
+        }
+
         input += code
         candidates = (context as ImeService).engine.search(input)
     }
