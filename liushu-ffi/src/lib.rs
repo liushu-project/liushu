@@ -15,9 +15,9 @@ impl FfiConstructor for Engine {
     fn new() -> Self {
         // TODO: remove hardcode
         let my_dir = MyProjectDirs {
-            data_dir: PathBuf::from("/data/data/com.elliot00.liushu/files"),
-            target_dir: PathBuf::from("/data/data/com.elliot00.liushu/files"),
-            config_dir: PathBuf::from("/data/data/com.elliot00.liushu/files"),
+            data_dir: PathBuf::from("/data/data/com.elliot00.liushu/files/sunman"),
+            target_dir: PathBuf::from("/data/data/com.elliot00.liushu/files/sunman"),
+            config_dir: PathBuf::from("/data/data/com.elliot00.liushu/files/sunman"),
         };
 
         Engine::init(&my_dir).unwrap()
