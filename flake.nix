@@ -22,7 +22,7 @@
             openssl
             pkg-config
             dhall
-            (rust-bin.stable.latest.default.override {
+            (rust-bin.stable."1.71.1".default.override {
               extensions = [ "rust-src" ];
               targets = [
                 "armv7-linux-androideabi"
