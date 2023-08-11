@@ -12,3 +12,6 @@
 
 # big file
 prelude/luna/corpus.tsv
+
+# nix build result
+/result

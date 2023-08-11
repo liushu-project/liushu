@@ -17,6 +17,26 @@
       in
       with pkgs;
       {
+        packages = {
+          default = pkgs.rustPlatform.buildRustPackage {
+            pname = "liushu";
+            version = "0.1.0";
+            src = ./.;
+            cargoLock = {
+              lockFile = ./Cargo.lock;
+            };
+          };
+          liushu-db-build = pkgs.rustPlatform.buildRustPackage {
+            pname = "liushu-db-build";
+            version = "0.1.0";
+            src = ./.;
+            cargoBuildFlags = [ "-p liushu-db-build" ];
+            cargoLock = {
+              lockFile = ./Cargo.lock;
+            };
+          };
+        };
+
         devShells.default = mkShell {
           buildInputs = [
             openssl
