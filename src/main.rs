@@ -1,7 +1,6 @@
 use std::io::{stdin, stdout, Write};
 
 use clap::{Parser, Subcommand};
-use liushu_core::deploy::deploy;
 use liushu_core::dirs::PROJECT_DIRS;
 use liushu_core::engine::{Engine, InputMethodEngine};
 
@@ -14,8 +13,6 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    Deploy,
-
     Repl,
 }
 
@@ -23,9 +20,6 @@ fn main() {
     let args = Cli::parse();
 
     match args.command {
-        Commands::Deploy => {
-            deploy(&PROJECT_DIRS).unwrap();
-        }
         Commands::Repl => {
             let engine = Engine::init(&PROJECT_DIRS).unwrap();
 
