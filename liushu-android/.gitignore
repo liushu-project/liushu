@@ -11,3 +11,4 @@ local.properties
 /.idea
 
 app/src/main/java/com/elliot00/liushu/uniffi/
+app/src/main/assets/
