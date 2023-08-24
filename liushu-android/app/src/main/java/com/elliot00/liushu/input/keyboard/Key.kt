@@ -19,10 +19,13 @@ package com.elliot00.liushu.input.keyboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -34,7 +37,13 @@ fun Key(
     onKeyPressed: (KeyCode) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.shadow(1.dp)) {
+    Row(
+        modifier = modifier
+            .shadow(1.dp)
+            .fillMaxHeight(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
         Text(
             data.label,
             Modifier
@@ -42,13 +51,6 @@ fun Key(
                     onKeyPressed(data.keyCode)
                 }
                 .background(Color.White)
-                .padding(
-                    start = 12.dp,
-                    end = 12.dp,
-                    top = 16.dp,
-                    bottom = 16.dp
-                )
-
         )
     }
 }
