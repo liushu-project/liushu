@@ -42,6 +42,15 @@
           ];
         };
         android-sdk = androidComposition.androidsdk;
+        my-rust = pkgs.rust-bin.stable."1.71.1".default.override {
+          extensions = [ "rust-src" ];
+          targets = [
+            "armv7-linux-androideabi"
+            "i686-linux-android"
+            "x86_64-linux-android"
+            "aarch64-linux-android"
+          ];
+        };
       in
       with pkgs;
       {
@@ -65,33 +74,33 @@
           };
         };
 
-        devShells.default = mkShell rec {
-          ANDROID_SDK_ROOT = "${android-sdk}/libexec/android-sdk";
-          NDK_VERSION = ndkVersion;
-          ANDROID_NDK_ROOT = "${ANDROID_SDK_ROOT}/ndk-bundle";
-          GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_SDK_ROOT}/build-tools/${buildToolsVersion}/aapt2";
-          JAVA_HOME = "${pkgs.jdk17.home}";
+        devShells = {
+          default = mkShell {
+            buildInputs = [
+              my-rust
+            ];
+          };
 
-          shellHook = ''
-            export PATH="$ANDROID_SDK_ROOT/cmake/${cmakeVersion}/bin:$PATH"
-            echo sdk.dir=$ANDROID_SDK_ROOT > liushu-android/local.properties
-          '';
+          android = mkShell rec {
+            ANDROID_SDK_ROOT = "${android-sdk}/libexec/android-sdk";
+            NDK_VERSION = ndkVersion;
+            ANDROID_NDK_ROOT = "${ANDROID_SDK_ROOT}/ndk-bundle";
+            GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_SDK_ROOT}/build-tools/${buildToolsVersion}/aapt2";
+            JAVA_HOME = "${pkgs.jdk17.home}";
 
-          buildInputs = [
-            android-sdk
-            openssl
-            pkg-config
-            dhall
-            (rust-bin.stable."1.71.1".default.override {
-              extensions = [ "rust-src" ];
-              targets = [
-                "armv7-linux-androideabi"
-                "i686-linux-android"
-                "x86_64-linux-android"
-                "aarch64-linux-android"
-              ];
-            })
-          ];
+            shellHook = ''
+              export PATH="$ANDROID_SDK_ROOT/cmake/${cmakeVersion}/bin:$PATH"
+              echo sdk.dir=$ANDROID_SDK_ROOT > liushu-android/local.properties
+            '';
+
+            buildInputs = [
+              android-sdk
+              openssl
+              pkg-config
+              dhall
+              my-rust
+            ];
+          };
         };
       }
     );
