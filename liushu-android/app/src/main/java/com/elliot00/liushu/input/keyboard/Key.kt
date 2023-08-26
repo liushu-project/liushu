@@ -22,7 +22,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,18 +39,15 @@ fun Key(
     Row(
         modifier = modifier
             .shadow(1.dp)
-            .fillMaxHeight(),
+            .fillMaxHeight()
+            .background(Color.White)
+            .clickable {
+                onKeyPressed(data.keyCode)
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Text(
-            data.label,
-            Modifier
-                .clickable {
-                    onKeyPressed(data.keyCode)
-                }
-                .background(Color.White)
-        )
+        Text(data.label)
     }
 }
 
