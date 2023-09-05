@@ -17,16 +17,6 @@
 
 package com.elliot00.liushu.input.keyboard
 
-sealed class KeyCode {
-    data class Alpha(val code: String) : KeyCode()
-    data class RawText(val text: String) : KeyCode()
-    object Delete : KeyCode()
-    object Shift : KeyCode()
-    object Comma : KeyCode()
-    object Period : KeyCode()
-    object Space : KeyCode()
-    object Enter : KeyCode()
-    object Symbols : KeyCode()
-    object Emoji : KeyCode()
-    object Abc : KeyCode()
+enum class KeyboardLayout {
+    QWERTY, SYMBOLS, EMOJI
 }

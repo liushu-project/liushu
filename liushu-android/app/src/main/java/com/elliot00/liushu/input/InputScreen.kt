@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.elliot00.liushu.input.keyboard.KeyCode
 import com.elliot00.liushu.input.keyboard.Keyboard
+import com.elliot00.liushu.input.keyboard.KeyboardLayout
 import com.elliot00.liushu.service.ImeService
 import com.elliot00.liushu.uniffi.Candidate
 
@@ -72,7 +73,10 @@ fun InputScreen() {
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }
-        Keyboard(onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) })
+        Keyboard(
+            onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) },
+            inputState.keyboardLayout
+        )
     }
 }
 
@@ -81,6 +85,9 @@ class InputStateHolder(private val context: Context) {
     private var isCapital by mutableStateOf(false)
 
     var candidates by mutableStateOf(listOf<Candidate>())
+        private set
+
+    var keyboardLayout by mutableStateOf(KeyboardLayout.QWERTY)
         private set
 
     fun handleKeyCode(keyCode: KeyCode) {
@@ -123,7 +130,21 @@ class InputStateHolder(private val context: Context) {
                 }
             }
 
-            else -> {}
+            is KeyCode.Symbols -> {
+                keyboardLayout = KeyboardLayout.SYMBOLS
+            }
+
+            is KeyCode.Emoji -> {
+                keyboardLayout = KeyboardLayout.EMOJI
+            }
+
+            is KeyCode.Abc -> {
+                keyboardLayout = KeyboardLayout.QWERTY
+            }
+
+            is KeyCode.RawText -> {
+                commitText(keyCode.text)
+            }
         }
     }
 
