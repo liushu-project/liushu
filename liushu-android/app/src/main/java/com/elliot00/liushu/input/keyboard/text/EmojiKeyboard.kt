@@ -17,12 +17,15 @@
 
 package com.elliot00.liushu.input.keyboard.text
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Icon
@@ -34,19 +37,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elliot00.liushu.input.keyboard.KeyCode
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EmojiKeyboard(onKeyPressed: (KeyCode) -> Unit) {
+    val pagerState = rememberPagerState(initialPage = 0)
+
     Column {
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 50.dp),
-            modifier = Modifier.height(260.dp)
-        ) {
-            items(EMOJI_MAP.values.toList().flatten()) { emoji ->
-                Text(
-                    text = emoji,
-                    fontSize = 24.sp,
-                    modifier = Modifier.clickable { onKeyPressed(KeyCode.RawText(emoji)) })
+        HorizontalPager(state = pagerState, pageCount = EMOJI_MATRIX.size) { page ->
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 50.dp),
+                modifier = Modifier.height(260.dp)
+            ) {
+                items(EMOJI_MATRIX[page].second) { emoji ->
+                    Text(text = emoji, fontSize = 24.sp,
+                        modifier = Modifier.clickable { onKeyPressed(KeyCode.RawText(emoji)) })
+                }
             }
+
         }
         IconButton(onClick = { onKeyPressed(KeyCode.Abc) }) {
             Icon(Icons.Filled.KeyboardArrowLeft, "goBack")
@@ -54,8 +61,8 @@ fun EmojiKeyboard(onKeyPressed: (KeyCode) -> Unit) {
     }
 }
 
-val EMOJI_MAP = mapOf(
-    "😃" to listOf(
+val EMOJI_MATRIX = listOf(
+    "😃" to arrayOf(
         "😀",
         "😃",
         "😄",
@@ -237,7 +244,7 @@ val EMOJI_MAP = mapOf(
         "💭",
         "💤"
     ),
-    "👋" to listOf(
+    "👋" to arrayOf(
         "👋",
         "👋🏻",
         "👋🏼",
@@ -3237,7 +3244,7 @@ val EMOJI_MAP = mapOf(
         "🫂",
         "👣"
     ),
-    "🐻" to listOf(
+    "🐻" to arrayOf(
         "🐵",
         "🐒",
         "🦍",
@@ -3398,7 +3405,7 @@ val EMOJI_MAP = mapOf(
         "🪺",
         "🍄"
     ),
-    "🍔" to listOf(
+    "🍔" to arrayOf(
         "🍇",
         "🍈",
         "🍉",
@@ -3535,7 +3542,7 @@ val EMOJI_MAP = mapOf(
         "🫙",
         "🏺"
     ),
-    "🌇" to listOf(
+    "🌇" to arrayOf(
         "🌍",
         "🌎",
         "🌏",
@@ -3804,7 +3811,7 @@ val EMOJI_MAP = mapOf(
         "💧",
         "🌊"
     ),
-    "⚽" to listOf(
+    "⚽" to arrayOf(
         "🎃",
         "🎄",
         "🎆",
@@ -3902,7 +3909,7 @@ val EMOJI_MAP = mapOf(
         "🧶",
         "🪢"
     ),
-    "💡" to listOf(
+    "💡" to arrayOf(
         "👓",
         "🕶️",
         "🕶",
@@ -4214,7 +4221,7 @@ val EMOJI_MAP = mapOf(
         "🪧",
         "🪪"
     ),
-    "🔣" to listOf(
+    "🔣" to arrayOf(
         "🏧",
         "🚮",
         "🚰",
@@ -4520,7 +4527,7 @@ val EMOJI_MAP = mapOf(
         "🔳",
         "🔲"
     ),
-    "🎌" to listOf(
+    "🎌" to arrayOf(
         "🏁",
         "🚩",
         "🎌",
