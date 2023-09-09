@@ -21,6 +21,7 @@ import android.content.Context
 import android.view.inputmethod.EditorInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -58,6 +59,11 @@ fun InputScreen() {
             .background(MaterialTheme.colorScheme.background)
             .fillMaxWidth()
     ) {
+        if (inputState.input.isNotEmpty()) {
+            Box {
+                Text(text = inputState.input)
+            }
+        }
         LazyRow(
             modifier = Modifier
                 .padding(horizontal = 12.dp)
@@ -81,7 +87,7 @@ fun InputScreen() {
 }
 
 class InputStateHolder(private val context: Context) {
-    private var input by mutableStateOf("")
+    var input by mutableStateOf("")
     private var isCapital by mutableStateOf(false)
 
     var candidates by mutableStateOf(listOf<Candidate>())
