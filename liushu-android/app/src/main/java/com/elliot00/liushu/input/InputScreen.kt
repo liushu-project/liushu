@@ -20,16 +20,15 @@ package com.elliot00.liushu.input
 import android.content.Context
 import android.view.inputmethod.EditorInfo
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.elliot00.liushu.input.keyboard.KeyCode
 import com.elliot00.liushu.input.keyboard.Keyboard
 import com.elliot00.liushu.input.keyboard.KeyboardLayout
+import com.elliot00.liushu.input.keyboard.candidate.CandidateItem
 import com.elliot00.liushu.service.ImeService
 import com.elliot00.liushu.uniffi.Candidate
 
@@ -66,17 +66,21 @@ fun InputScreen() {
         }
         LazyRow(
             modifier = Modifier
-                .padding(horizontal = 12.dp)
                 .height(40.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            items(inputState.candidates) { candidate ->
-                Text(text = candidate.text, modifier = Modifier
-                    .clickable {
-                        inputState.commitCandidate(candidate)
-                    })
-                Spacer(modifier = Modifier.width(8.dp))
+            itemsIndexed(inputState.candidates) { index, candidate ->
+                CandidateItem(
+                    candidate = candidate,
+                    onClick = { inputState.commitCandidate(candidate) })
+                if (index < inputState.candidates.lastIndex) {
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxHeight(0.6f)
+                            .width(1.dp)
+                    )
+                }
             }
         }
         Keyboard(
@@ -160,8 +164,7 @@ class InputStateHolder(private val context: Context) {
 
     private fun commitText(text: String) {
         (context as ImeService).currentInputConnection.commitText(
-            text,
-            text.length
+            text, text.length
         )
         input = ""
         candidates = listOf()
@@ -180,7 +183,6 @@ class InputStateHolder(private val context: Context) {
 }
 
 @Composable
-fun rememberInputState(context: Context): InputStateHolder =
-    remember(context) {
-        InputStateHolder(context)
-    }
+fun rememberInputState(context: Context): InputStateHolder = remember(context) {
+    InputStateHolder(context)
+}
