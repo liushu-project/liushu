@@ -17,12 +17,14 @@
 
 package com.elliot00.liushu.input.keyboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +45,22 @@ fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 row.forEach { data ->
-                    Key(data, onKeyPressed, Modifier.weight(1f))
+                    var modifier = Modifier.weight(1f)
+
+                    when (data.keyCode) {
+                        is KeyCode.Enter -> modifier =
+                            modifier.background(color = MaterialTheme.colorScheme.tertiaryContainer)
+
+                        is KeyCode.Shift, is KeyCode.Delete, is KeyCode.Comma, is KeyCode.Period -> modifier =
+                            modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
+
+                        is KeyCode.Symbols -> modifier =
+                            modifier.background(color = MaterialTheme.colorScheme.secondaryContainer)
+
+                        else -> modifier =
+                            modifier.background(color = MaterialTheme.colorScheme.surface)
+                    }
+                    Key(data, onKeyPressed, modifier)
                 }
             }
         }
