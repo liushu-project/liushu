@@ -39,26 +39,44 @@ fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
                     .fillMaxWidth()
                     .height(54.dp),
                 horizontalArrangement = Arrangement.spacedBy(
-                    8.dp,
+                    4.dp,
                     Alignment.CenterHorizontally
                 ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 row.forEach { data ->
-                    var modifier = Modifier.weight(1f)
+                    var modifier: Modifier = Modifier
 
                     when (data.keyCode) {
                         is KeyCode.Enter -> modifier =
-                            modifier.background(color = MaterialTheme.colorScheme.tertiaryContainer)
+                            modifier
+                                .background(color = MaterialTheme.colorScheme.tertiaryContainer)
+                                .weight(1.5f)
 
-                        is KeyCode.Shift, is KeyCode.Delete, is KeyCode.Comma, is KeyCode.Period -> modifier =
-                            modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
+                        is KeyCode.Shift, is KeyCode.Delete -> modifier =
+                            modifier
+                                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                .weight(1.5f)
+
+                        is KeyCode.Comma, is KeyCode.Period -> modifier =
+                            modifier
+                                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                .weight(1f)
 
                         is KeyCode.Symbols -> modifier =
-                            modifier.background(color = MaterialTheme.colorScheme.secondaryContainer)
+                            modifier
+                                .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                                .weight(1.5f)
+
+                        is KeyCode.Space -> modifier =
+                            modifier
+                                .background(color = MaterialTheme.colorScheme.surface)
+                                .weight(4f)
 
                         else -> modifier =
-                            modifier.background(color = MaterialTheme.colorScheme.surface)
+                            modifier
+                                .background(color = MaterialTheme.colorScheme.surface)
+                                .weight(1f)
                     }
                     Key(data, onKeyPressed, modifier)
                 }
