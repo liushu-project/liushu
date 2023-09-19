@@ -20,11 +20,11 @@ package com.elliot00.liushu.input
 import android.content.Context
 import android.view.inputmethod.EditorInfo
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -40,7 +40,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import com.elliot00.liushu.input.keyboard.KeyCode
 import com.elliot00.liushu.input.keyboard.Keyboard
 import com.elliot00.liushu.input.keyboard.KeyboardLayout
@@ -54,16 +56,21 @@ fun InputScreen() {
     val ctx = LocalContext.current
     val inputState = rememberInputState(context = ctx)
 
+    if (inputState.input.isNotEmpty()) {
+        Popup(alignment = Alignment.TopStart, offset = IntOffset(0, -60)) {
+            Text(
+                text = inputState.input,
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 8.dp)
+            )
+        }
+    }
     Column(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxWidth()
     ) {
-        if (inputState.input.isNotEmpty()) {
-            Box {
-                Text(text = inputState.input)
-            }
-        }
         LazyRow(
             modifier = Modifier
                 .height(40.dp)
