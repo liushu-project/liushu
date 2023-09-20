@@ -61,14 +61,14 @@ fun InputScreen() {
             Text(
                 text = inputState.input,
                 modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.background)
+                    .background(color = MaterialTheme.colorScheme.surfaceVariant)
                     .padding(horizontal = 8.dp)
             )
         }
     }
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .fillMaxWidth()
     ) {
         LazyRow(
