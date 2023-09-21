@@ -18,7 +18,6 @@
 package com.elliot00.liushu.input.keyboard.candidate
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,16 +30,13 @@ import com.elliot00.liushu.uniffi.CandidateSource
 
 @Composable
 fun CandidateItem(candidate: Candidate, onClick: () -> Unit = {}) {
-    Box(
+    Text(
+        text = candidate.text,
+        textAlign = TextAlign.Center,
         modifier = Modifier
             .padding(horizontal = 12.dp)
             .clickable(onClick = onClick)
-    ) {
-        Text(
-            text = candidate.text, textAlign = TextAlign.Center
-        )
-    }
-
+    )
 }
 
 @Preview

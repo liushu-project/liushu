@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -55,45 +57,47 @@ import com.elliot00.liushu.uniffi.Candidate
 fun InputScreen() {
     val ctx = LocalContext.current
     val inputState = rememberInputState(context = ctx)
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     if (inputState.input.isNotEmpty()) {
         Popup(alignment = Alignment.TopStart, offset = IntOffset(0, -60)) {
             Text(
                 text = inputState.input,
                 modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.surfaceVariant)
+                    .background(color = MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 8.dp)
             )
         }
     }
-    Column(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .fillMaxWidth()
-    ) {
-        LazyRow(
+    Surface(tonalElevation = 5.dp, modifier = Modifier.height(screenHeight / 3)) {
+        Column(
             modifier = Modifier
-                .height(40.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+                .fillMaxWidth()
         ) {
-            itemsIndexed(inputState.candidates) { index, candidate ->
-                CandidateItem(
-                    candidate = candidate,
-                    onClick = { inputState.commitCandidate(candidate) })
-                if (index < inputState.candidates.lastIndex) {
-                    Divider(
-                        modifier = Modifier
-                            .fillMaxHeight(0.6f)
-                            .width(1.dp)
-                    )
+            LazyRow(
+                modifier = Modifier
+                    .height(40.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                itemsIndexed(inputState.candidates) { index, candidate ->
+                    CandidateItem(
+                        candidate = candidate,
+                        onClick = { inputState.commitCandidate(candidate) })
+                    if (index < inputState.candidates.lastIndex) {
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxHeight(0.6f)
+                                .width(1.dp)
+                        )
+                    }
                 }
             }
+            Keyboard(
+                onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) },
+                inputState.keyboardLayout
+            )
         }
-        Keyboard(
-            onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) },
-            inputState.keyboardLayout
-        )
     }
 }
 

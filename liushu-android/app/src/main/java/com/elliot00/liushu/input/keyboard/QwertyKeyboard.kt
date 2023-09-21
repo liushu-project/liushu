@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,12 +38,18 @@ import com.elliot00.liushu.R
 
 @Composable
 fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
-    Column(Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        Modifier
+            .padding(4.dp)
+            .fillMaxHeight()
+            .padding(horizontal = 3.dp, vertical = 5.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        val rowModifier = Modifier.weight(1f)
+
         keysMatrix.forEach { row ->
             Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(42.dp),
+                modifier = rowModifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(
                     4.dp,
                     Alignment.CenterHorizontally
