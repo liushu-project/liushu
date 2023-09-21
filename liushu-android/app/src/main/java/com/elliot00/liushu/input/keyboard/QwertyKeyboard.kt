@@ -18,17 +18,24 @@
 package com.elliot00.liushu.input.keyboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.elliot00.liushu.R
 
 @Composable
 fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
@@ -37,7 +44,7 @@ fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .height(54.dp),
+                    .height(42.dp),
                 horizontalArrangement = Arrangement.spacedBy(
                     4.dp,
                     Alignment.CenterHorizontally
@@ -45,40 +52,186 @@ fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 row.forEach { data ->
-                    var modifier: Modifier = Modifier
+                    val modifier: Modifier = Modifier.fillMaxHeight()
 
                     when (data.keyCode) {
-                        is KeyCode.Enter -> modifier =
-                            modifier
-                                .background(color = MaterialTheme.colorScheme.tertiaryContainer)
-                                .weight(1.5f)
+                        is KeyCode.Enter -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                                        shape = MaterialTheme.shapes.extraLarge
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.extraLarge)
+                                    .weight(1.5f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painterResource(id = R.drawable.ic_baseline_keyboard_return_24),
+                                    contentDescription = "return",
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
 
-                        is KeyCode.Shift, is KeyCode.Delete -> modifier =
-                            modifier
-                                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                                .weight(1.5f)
+                        is KeyCode.Shift -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.medium)
+                                    .weight(1.5f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_capslock_none),
+                                    contentDescription = "shift",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
 
-                        is KeyCode.Comma, is KeyCode.Period -> modifier =
-                            modifier
-                                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                                .weight(1f)
+                        is KeyCode.Delete -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.medium)
+                                    .weight(1.5f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_outline_backspace_24),
+                                    contentDescription = "delete",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
 
-                        is KeyCode.Symbols -> modifier =
-                            modifier
-                                .background(color = MaterialTheme.colorScheme.secondaryContainer)
-                                .weight(1.5f)
+                        is KeyCode.Comma, is KeyCode.Period -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.medium)
+                                    .weight(1f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = data.label,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
 
-                        is KeyCode.Space -> modifier =
-                            modifier
-                                .background(color = MaterialTheme.colorScheme.surface)
-                                .weight(4f)
+                        is KeyCode.Symbols -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                        shape = MaterialTheme.shapes.extraLarge
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.extraLarge)
+                                    .weight(1.5f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = data.label,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
 
-                        else -> modifier =
-                            modifier
-                                .background(color = MaterialTheme.colorScheme.surface)
-                                .weight(1f)
+                        is KeyCode.Space -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.medium)
+                                    .weight(4f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {}
+                        }
+
+                        is KeyCode.Emoji -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.medium)
+                                    .weight(1f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_outline_tag_faces_24),
+                                    contentDescription = "emoji",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+
+                        else -> {
+                            Row(
+                                modifier = modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                                    .clip(shape = MaterialTheme.shapes.medium)
+                                    .weight(1f)
+                                    .clickable {
+                                        onKeyPressed(data.keyCode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = data.label,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
                     }
-                    Key(data, onKeyPressed, modifier)
                 }
             }
         }
