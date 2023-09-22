@@ -18,17 +18,17 @@
 package com.elliot00.liushu.input.keyboard.text
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -42,9 +42,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elliot00.liushu.input.keyboard.KeyCode
 import kotlinx.coroutines.launch
@@ -80,21 +80,23 @@ fun SymbolPicker(symbolsData: Array<Pair<String, Array<String>>>, onKeyPressed: 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .align(Alignment.End),
-            horizontalArrangement = Arrangement.Center
+                .heightIn(40.dp)
         ) {
             IconButton(onClick = { onKeyPressed(KeyCode.Abc) }) {
                 Icon(Icons.Filled.KeyboardArrowLeft, "goBackToQwerty")
             }
-            symbolsData.forEachIndexed { index, (category, _) ->
-                val color =
-                    if (pagerState.currentPage == index) Color.LightGray else MaterialTheme.colorScheme.background
-                FilledTonalButton(
-                    onClick = { coroutineScope.launch { pagerState.scrollToPage(index) } },
-                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = color)
-                ) {
-                    Text(category, fontSize = 24.sp)
+            Column {
+                LazyRow {
+                    itemsIndexed(symbolsData) { index, (category, _) ->
+                        val color =
+                            if (pagerState.currentPage == index) Color.LightGray else MaterialTheme.colorScheme.background
+                        FilledTonalButton(
+                            onClick = { coroutineScope.launch { pagerState.scrollToPage(index) } },
+                            colors = ButtonDefaults.filledTonalButtonColors(containerColor = color)
+                        ) {
+                            Text(category, fontSize = 24.sp)
+                        }
+                    }
                 }
             }
         }
