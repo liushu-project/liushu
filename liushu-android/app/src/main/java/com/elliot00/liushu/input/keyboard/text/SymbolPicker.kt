@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elliot00.liushu.input.keyboard.KeyCode
@@ -69,7 +70,7 @@ fun SymbolPicker(symbolsData: Array<Pair<String, Array<String>>>, onKeyPressed: 
                 ) {
                     items(symbolsData[page].second) { symbol ->
                         TextButton(onClick = { onKeyPressed(KeyCode.RawText(symbol)) }) {
-                            Text(text = symbol, fontSize = 24.sp)
+                            Text(text = symbol, fontSize = 24.sp, textAlign = TextAlign.Center)
                         }
                     }
                 }
