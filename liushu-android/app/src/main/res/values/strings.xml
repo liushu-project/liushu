@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Liushu</string>
-    <string name="subtype_en_US">English (US)</string>
+    <string name="app_name">Liushu IME</string>
+    <string name="subtype_default">sunman</string>
 </resources>
