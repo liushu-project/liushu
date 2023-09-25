@@ -1,0 +1,12 @@
+[versions]
+kotlin_version = "1.9.10"
+
+
+[libraries]
+reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin_version" }
+stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin_version" }
+
+[bundles]
+
+[plugins]
+android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin_version" }

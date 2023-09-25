@@ -1,0 +1,32 @@
+[versions]
+agp = "8.1.1"
+
+lifecycle_version = "2.6.2"
+
+constraintlayout = "2.1.4"
+constraintlayoutcomposeVersion = "1.0.1"
+
+espressoCore = "3.5.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+
+[libraries]
+
+constraintlayout-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutcomposeVersion" }
+
+corektx = "androidx.core:core-ktx:1.12.0"
+
+lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycle_version" }
+lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle_version" }
+lifecycle-runtimektx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle_version" }
+lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycle_version" }
+
+espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
+ext-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
+junit = { module = "junit:junit", version.ref = "junit" }
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+[bundles]
+lifecycle = ["lifecycle-common", "lifecycle-process", "lifecycle-runtimektx", "lifecycle-service"]
