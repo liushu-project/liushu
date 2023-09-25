@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SymbolPicker(symbolsData: Array<Pair<String, Array<String>>>, onKeyPressed: (KeyCode) -> Unit) {
-    val pagerState = rememberPagerState(initialPage = 0)
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { symbolsData.size })
 
     Column(
         modifier = Modifier
@@ -64,7 +64,7 @@ fun SymbolPicker(symbolsData: Array<Pair<String, Array<String>>>, onKeyPressed: 
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            HorizontalPager(state = pagerState, pageCount = symbolsData.size) { page ->
+            HorizontalPager(state = pagerState) { page ->
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(10),
                 ) {

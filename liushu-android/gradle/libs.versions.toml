@@ -1,0 +1,9 @@
+[versions]
+jdkDesugar = "2.0.3"
+
+[libraries]
+core-jdk-desugaring = { module = "com.android.tools:desugar_jdk_libs", version.ref = "jdkDesugar" }
+
+[plugins]
+
+
