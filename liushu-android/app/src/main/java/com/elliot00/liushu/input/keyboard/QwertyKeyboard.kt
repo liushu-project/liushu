@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -47,7 +48,7 @@ fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
     ) {
         val rowModifier = Modifier.weight(1f)
 
-        keysMatrix.forEach { row ->
+        keysMatrix.forEachIndexed { index, row ->
             Row(
                 modifier = rowModifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(
@@ -56,6 +57,9 @@ fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
                 ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                if (index == 1) {
+                    Spacer(modifier = Modifier.weight(0.5f))
+                }
                 row.forEach { data ->
                     val modifier: Modifier = Modifier.fillMaxHeight()
 
@@ -237,6 +241,9 @@ fun QwertyKeyboard(onKeyPressed: (KeyCode) -> Unit) {
                             }
                         }
                     }
+                }
+                if (index == 1) {
+                    Spacer(modifier = Modifier.weight(0.5f))
                 }
             }
         }
