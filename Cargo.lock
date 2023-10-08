@@ -847,6 +847,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "liushu-ngram"
+version = "0.1.0"
+dependencies = [
+ "clap 4.2.7",
+ "liushu-core",
+ "redb",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
