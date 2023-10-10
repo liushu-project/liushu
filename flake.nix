@@ -63,15 +63,6 @@
               lockFile = ./Cargo.lock;
             };
           };
-          liushu-db-build = pkgs.rustPlatform.buildRustPackage {
-            pname = "liushu-db-build";
-            version = "0.1.0";
-            src = ./.;
-            cargoBuildFlags = [ "-p liushu-db-build" ];
-            cargoLock = {
-              lockFile = ./Cargo.lock;
-            };
-          };
         };
 
         devShells = {

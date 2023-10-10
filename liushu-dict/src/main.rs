@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use liushu_core::dict::build2;
+use liushu_core::dict::build;
 
 #[derive(Parser)]
 #[command(version)]
@@ -24,7 +24,7 @@ fn main() {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::Build { inputs, output }) => {
-            build2(inputs, output).unwrap();
+            build(inputs, output).unwrap();
         }
         None => {}
     }

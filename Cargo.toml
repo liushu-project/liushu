@@ -20,7 +20,6 @@ harness = false
 [workspace]
 members = [
     "liushu-core",
-    "liushu-db-build",
     "liushu-dict",
     "liushu-ffi",
     "liushu-ls",

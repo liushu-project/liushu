@@ -821,13 +821,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "liushu-db-build"
-version = "0.1.0"
-dependencies = [
- "liushu-core",
-]
-
-[[package]]
 name = "liushu-dict"
 version = "0.1.0"
 dependencies = [
