@@ -21,6 +21,7 @@ harness = false
 members = [
     "liushu-core",
     "liushu-db-build",
+    "liushu-dict",
     "liushu-ffi",
     "liushu-ls",
     "liushu-ngram",

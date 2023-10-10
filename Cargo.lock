@@ -828,6 +828,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "liushu-dict"
+version = "0.1.0"
+dependencies = [
+ "clap 4.2.7",
+ "liushu-core",
+]
+
+[[package]]
 name = "liushu-ffi"
 version = "0.1.0"
 dependencies = [
