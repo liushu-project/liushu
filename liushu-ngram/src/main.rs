@@ -48,3 +48,14 @@ fn main() {
         None => {}
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Cli;
+    use clap::CommandFactory;
+
+    #[test]
+    fn verify_cli() {
+        Cli::command().debug_assert()
+    }
+}
