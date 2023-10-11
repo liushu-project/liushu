@@ -17,9 +17,9 @@
 
 package com.elliot00.liushu.service
 
-import androidx.lifecycle.ViewModelStore
 import android.view.View
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
@@ -29,9 +29,16 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.elliot00.liushu.input.InputView
 import com.elliot00.liushu.uniffi.Engine
+import java.io.File
 
 class ImeService : LifecycleInputMethodService(), ViewModelStoreOwner, SavedStateRegistryOwner {
-    val engine = Engine()
+    val engine: Engine by lazy {
+        val dictDir = "sunman"
+        val dictFile = "sunman.trie"
+        val path = sequenceOf(filesDir, dictDir, dictFile).joinToString(separator = File.separator)
+        Engine(path)
+    }
+
     override fun onCreateInputView(): View {
         val view = InputView(this)
 

@@ -1,7 +1,7 @@
 pub mod candidates;
 mod segmentor;
 
-use std::fs::File;
+use std::{fs::File, path::Path};
 
 use itertools::Itertools;
 use patricia_tree::PatriciaMap;
@@ -20,6 +20,12 @@ pub struct Engine {
 }
 
 impl Engine {
+    pub fn new(dict_path: impl AsRef<Path>) -> Result<Self, LiushuError> {
+        let trie: PatriciaMap<Vec<DictItem>> = bincode::deserialize_from(File::open(dict_path)?)?;
+
+        Ok(Self { trie })
+    }
+
     pub fn init(proj_dirs: &MyProjectDirs) -> Result<Self, LiushuError> {
         let trie: PatriciaMap<Vec<DictItem>> =
             bincode::deserialize_from(File::open(proj_dirs.target_dir.join("sunman.trie"))?)?;

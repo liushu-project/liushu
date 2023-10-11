@@ -20,7 +20,9 @@ dictionary Candidate {
 };
 
 interface Engine {
-    constructor();
+    [Throws=LiushuError]
+    constructor([ByRef] string dict_path);
+
     [Throws=LiushuError]
     sequence<Candidate> search([ByRef] string code);
 };

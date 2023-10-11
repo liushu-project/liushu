@@ -1,11 +1,14 @@
+use std::io::stdin;
+
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
-use liushu_core::{
-    dirs::PROJECT_DIRS,
-    engine::{Engine, InputMethodEngine},
-};
+use liushu_core::engine::{Engine, InputMethodEngine};
 
 pub fn engine_benchmark(c: &mut Criterion) {
-    let engine = Engine::init(&PROJECT_DIRS).unwrap();
+    println!("Enter engine dict path:");
+    let mut dict_path = String::new();
+    stdin().read_line(&mut dict_path).unwrap();
+
+    let engine = Engine::new(dict_path.trim()).unwrap();
     let test_inputs = ["a", "aac", "bo", "cfl", "df", "fojq", "qiq", "hir", "zzz"];
 
     let mut group = c.benchmark_group("Engine bench");
