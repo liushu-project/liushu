@@ -18,6 +18,7 @@
 package com.elliot00.liushu.input
 
 import android.content.Context
+import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -120,7 +121,7 @@ class InputStateHolder(private val context: Context) {
                     input = input.dropLast(1)
                     candidates = context.engine.search(input)
                 } else {
-                    currentInputConnection.deleteSurroundingText(1, 0)
+                    context.sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
                 }
             }
 
