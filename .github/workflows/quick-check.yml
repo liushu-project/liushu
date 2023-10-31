@@ -8,15 +8,18 @@ env:
 
 jobs:
   test-workspace:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix flake check
 
       - name: rust test
-        run: cargo test --workspace
+        run: nix develop --command cargo test --workspace
 
       - name: rust lint
-        run: cargo clippy -- -D warnings
+        run: nix develop --command cargo clippy -- -D warnings
 
       - name: rust format
-        run: cargo fmt --all -- --check
+        run: nix develop --command cargo fmt --all -- --check
