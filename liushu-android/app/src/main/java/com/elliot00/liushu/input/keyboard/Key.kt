@@ -193,6 +193,29 @@ fun RowScope.Key(
             }
         }
 
+        is KeyCode.AsciiModeSwitch -> {
+            Row(
+                modifier = modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .clip(shape = MaterialTheme.shapes.medium)
+                    .weight(1f)
+                    .clickable {
+                        onKeyPressed(data.keyCode)
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_language_24),
+                    contentDescription = "language",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
         else -> {
             Row(
                 modifier = modifier

@@ -29,4 +29,5 @@ sealed class KeyCode {
     object Symbols : KeyCode()
     object Emoji : KeyCode()
     object Abc : KeyCode()
+    object AsciiModeSwitch : KeyCode()
 }

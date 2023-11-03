@@ -105,7 +105,7 @@ private val keysMatrix = arrayOf(
     arrayOf(
         KeyData(label = "?123", keyCode = KeyCode.Symbols),
         KeyData(label = "，", keyCode = KeyCode.Comma),
-        KeyData(label = ":>", keyCode = KeyCode.Emoji),
+        KeyData(label = "ascii", keyCode = KeyCode.AsciiModeSwitch),
         KeyData(label = "　", keyCode = KeyCode.Space),
         KeyData(label = "。", keyCode = KeyCode.Period),
         KeyData(label = "回车", keyCode = KeyCode.Enter)

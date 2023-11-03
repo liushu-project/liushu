@@ -72,8 +72,7 @@ fun InputScreen() {
     }
     Surface(tonalElevation = 5.dp, modifier = Modifier.height(screenHeight / 3)) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
             LazyRow(
                 modifier = Modifier
@@ -82,8 +81,7 @@ fun InputScreen() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 itemsIndexed(inputState.candidates) { index, candidate ->
-                    CandidateItem(
-                        candidate = candidate,
+                    CandidateItem(candidate = candidate,
                         onClick = { inputState.commitCandidate(candidate) })
                     if (index < inputState.candidates.lastIndex) {
                         Divider(
@@ -105,6 +103,7 @@ fun InputScreen() {
 class InputStateHolder(private val context: Context) {
     var input by mutableStateOf("")
     private var isCapital by mutableStateOf(false)
+    private var isAsciiMode by mutableStateOf(false)
 
     var candidates by mutableStateOf(listOf<Candidate>())
         private set
@@ -167,6 +166,10 @@ class InputStateHolder(private val context: Context) {
             is KeyCode.RawText -> {
                 commitText(keyCode.text)
             }
+
+            is KeyCode.AsciiModeSwitch -> {
+                isAsciiMode = !isAsciiMode
+            }
         }
     }
 
@@ -183,6 +186,11 @@ class InputStateHolder(private val context: Context) {
     }
 
     private fun handleAlphaCode(code: String) {
+        if (isAsciiMode) {
+            commitText(code)
+            return
+        }
+
         if (isCapital) {
             commitText(code.uppercase())
             isCapital = false
