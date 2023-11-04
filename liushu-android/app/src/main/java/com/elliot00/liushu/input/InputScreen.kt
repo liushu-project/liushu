@@ -61,9 +61,15 @@ fun InputScreen() {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     if (inputState.input.isNotEmpty()) {
+        val text = if(inputState.unexhausted.isNotEmpty()) {
+            "${inputState.input} ${inputState.unexhausted}"
+        } else {
+            inputState.input
+        }
+
         Popup(alignment = Alignment.TopStart, offset = IntOffset(0, -60)) {
             Text(
-                text = inputState.input,
+                text = text,
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 8.dp)
@@ -81,7 +87,8 @@ fun InputScreen() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 itemsIndexed(inputState.candidates) { index, candidate ->
-                    CandidateItem(candidate = candidate,
+                    CandidateItem(
+                        candidate = candidate,
                         onClick = { inputState.commitCandidate(candidate) })
                     if (index < inputState.candidates.lastIndex) {
                         Divider(
@@ -102,6 +109,7 @@ fun InputScreen() {
 
 class InputStateHolder(private val context: Context) {
     var input by mutableStateOf("")
+    var unexhausted by mutableStateOf("")
     private var isCapital by mutableStateOf(false)
     private var isAsciiMode by mutableStateOf(false)
 
@@ -181,8 +189,16 @@ class InputStateHolder(private val context: Context) {
         (context as ImeService).currentInputConnection.commitText(
             text, text.length
         )
+
         input = ""
-        candidates = listOf()
+
+        if (unexhausted.isNotEmpty()) {
+            for (char in unexhausted) {
+                handleAlphaCode(char.toString())
+            }
+        } else {
+            candidates = listOf()
+        }
     }
 
     private fun handleAlphaCode(code: String) {
@@ -197,8 +213,14 @@ class InputStateHolder(private val context: Context) {
             return
         }
 
+        val currentCandidates = (context as ImeService).engine.search(input + code)
+        if (currentCandidates.isEmpty()) {
+            unexhausted += code
+            return
+        }
         input += code
-        candidates = (context as ImeService).engine.search(input)
+        candidates = currentCandidates
+        unexhausted = ""
     }
 }
 
