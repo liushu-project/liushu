@@ -1,6 +1,6 @@
 pub mod candidates;
-mod segmentor;
-mod translator;
+pub mod segmentor;
+pub mod translator;
 
 use std::{fs::File, path::Path};
 
