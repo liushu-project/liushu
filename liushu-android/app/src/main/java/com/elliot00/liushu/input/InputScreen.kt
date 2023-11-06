@@ -124,7 +124,9 @@ class InputStateHolder(private val context: Context) {
         when (keyCode) {
             is KeyCode.Alpha -> handleAlphaCode(keyCode.code)
             is KeyCode.Delete -> {
-                if (input.isNotEmpty()) {
+                if (unexhausted.isNotEmpty()) {
+                    unexhausted = unexhausted.dropLast(1)
+                } else if (input.isNotEmpty()) {
                     input = input.dropLast(1)
                     candidates = context.engine.search(input)
                 } else {
