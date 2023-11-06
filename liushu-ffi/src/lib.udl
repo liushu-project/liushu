@@ -11,7 +11,7 @@ dictionary Candidate {
     string text;
     string code;
     string? comment;
-    u64 weight;
+    u32 weight;
 };
 
 interface Engine {

@@ -9,7 +9,7 @@ use crate::error::LiushuError;
 pub struct DictItem {
     pub text: String,
     pub code: String,
-    pub weight: u64,
+    pub weight: u32,
     pub comment: Option<String>,
 }
 
