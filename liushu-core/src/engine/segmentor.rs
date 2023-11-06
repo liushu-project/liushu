@@ -22,23 +22,6 @@ impl<V> Segmentor for PatriciaMap<V> {
     }
 }
 
-#[allow(dead_code)]
-pub fn split_pinyin(code: &str, trie: &PatriciaMap<Vec<String>>) -> Vec<String> {
-    let mut syllables = Vec::new();
-    let mut remaining = code;
-    while !remaining.is_empty() {
-        if let Some((bytes, _)) = trie.get_longest_common_prefix(remaining) {
-            let match_str = String::from_utf8_lossy(bytes);
-            let match_str = match_str.trim();
-            syllables.push(match_str.to_string());
-            remaining = &remaining[match_str.len()..];
-        } else {
-            break;
-        }
-    }
-    syllables
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
