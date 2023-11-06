@@ -8,7 +8,7 @@ use patricia_tree::PatriciaMap;
 
 use crate::{dict::DictItem, dirs::MyProjectDirs, error::LiushuError};
 
-use self::candidates::{Candidate, CandidateSource};
+use self::candidates::Candidate;
 
 pub trait InputMethodEngine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError>;
@@ -49,7 +49,6 @@ impl InputMethodEngine for Engine {
                     code: item.code.clone(),
                     comment: item.comment.clone(),
                     weight: item.weight,
-                    source: CandidateSource::CodeTable,
                 })
             })
             .unique_by(|i| i.text.clone())

@@ -7,16 +7,11 @@ enum LiushuError {
     "Other"
 };
 
-enum CandidateSource {
-    "Hmm", "CodeTable"
-};
-
 dictionary Candidate {
     string text;
     string code;
     string? comment;
     u64 weight;
-    CandidateSource source;
 };
 
 interface Engine {
