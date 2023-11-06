@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::LiushuError;
 
+pub type Dictionary = PatriciaMap<Vec<DictItem>>;
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DictItem {
     pub text: String,

@@ -1,7 +1,6 @@
 use itertools::Itertools;
-use patricia_tree::PatriciaMap;
 
-use crate::dict::DictItem;
+use crate::dict::Dictionary;
 
 use super::candidates::Candidate;
 
@@ -9,7 +8,7 @@ pub trait Translator {
     fn translate(&self, code: &str) -> Vec<Candidate>;
 }
 
-impl Translator for PatriciaMap<Vec<DictItem>> {
+impl Translator for Dictionary {
     fn translate(&self, code: &str) -> Vec<Candidate> {
         if code.is_empty() {
             return vec![];
