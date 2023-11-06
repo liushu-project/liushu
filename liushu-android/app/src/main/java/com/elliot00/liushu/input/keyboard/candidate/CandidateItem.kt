@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.elliot00.liushu.uniffi.Candidate
-import com.elliot00.liushu.uniffi.CandidateSource
 
 @Composable
 fun CandidateItem(candidate: Candidate, onClick: () -> Unit = {}) {
@@ -42,5 +41,5 @@ fun CandidateItem(candidate: Candidate, onClick: () -> Unit = {}) {
 @Preview
 @Composable
 private fun CandidateItemPreview() {
-    CandidateItem(candidate = Candidate("hello", "hello", null, 1u, CandidateSource.CODE_TABLE))
+    CandidateItem(candidate = Candidate("hello", "hello", null, 1u))
 }
