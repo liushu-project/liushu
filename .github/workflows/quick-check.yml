@@ -7,7 +7,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test-workspace:
+  test:
+    name: Test
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
@@ -18,8 +19,26 @@ jobs:
       - name: rust test
         run: nix develop --command cargo test --workspace
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix flake check
+
       - name: rust lint
         run: nix develop --command cargo clippy -- -D warnings
+
+  fmt:
+    name: Format check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix flake check
 
       - name: rust format
         run: nix develop --command cargo fmt --all -- --check
