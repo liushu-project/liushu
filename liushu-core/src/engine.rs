@@ -1,14 +1,14 @@
 pub mod candidates;
 mod segmentor;
+mod translator;
 
 use std::{fs::File, path::Path};
 
-use itertools::Itertools;
 use patricia_tree::PatriciaMap;
 
 use crate::{dict::DictItem, dirs::MyProjectDirs, error::LiushuError};
 
-use self::candidates::Candidate;
+use self::{candidates::Candidate, translator::Translator};
 
 pub trait InputMethodEngine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError>;
@@ -36,25 +36,6 @@ impl Engine {
 
 impl InputMethodEngine for Engine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError> {
-        if code.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let result: Vec<Candidate> = self
-            .trie
-            .iter_prefix(code.as_bytes())
-            .flat_map(|(_, value)| {
-                value.iter().map(|item| Candidate {
-                    text: item.text.clone(),
-                    code: item.code.clone(),
-                    comment: item.comment.clone(),
-                    weight: item.weight,
-                })
-            })
-            .unique_by(|i| i.text.clone())
-            .sorted_by_key(|i| std::cmp::Reverse(i.weight))
-            .collect();
-
-        Ok(result)
+        Ok(self.trie.translate(code))
     }
 }
