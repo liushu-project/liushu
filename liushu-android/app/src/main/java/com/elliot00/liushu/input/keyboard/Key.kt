@@ -26,17 +26,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import com.elliot00.liushu.R
+import com.elliot00.liushu.input.InputViewModel
 
 @Composable
 fun RowScope.Key(
     data: KeyData,
     onKeyPressed: (KeyCode) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: InputViewModel
 ) {
     when (data.keyCode) {
         is KeyCode.Enter -> {
@@ -147,13 +150,13 @@ fun RowScope.Key(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = data.label,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    text = data.label, color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
         }
 
         is KeyCode.Space -> {
+            val isAsciiMode = viewModel.isAsciiMode.collectAsState()
             Row(
                 modifier = modifier
                     .background(
@@ -167,7 +170,13 @@ fun RowScope.Key(
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
-            ) {}
+            ) {
+                Text(
+                    text = if (isAsciiMode.value) "En" else "山人",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
 
         is KeyCode.Emoji -> {

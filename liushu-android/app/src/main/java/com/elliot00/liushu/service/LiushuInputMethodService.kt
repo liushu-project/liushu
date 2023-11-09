@@ -17,7 +17,11 @@
 
 package com.elliot00.liushu.service
 
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.AbstractComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -27,11 +31,24 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.elliot00.liushu.input.InputView
+import com.elliot00.liushu.input.InputScreen
+import com.elliot00.liushu.ui.theme.LiushuTheme
+import com.elliot00.liushu.uniffi.Candidate
 import com.elliot00.liushu.uniffi.Engine
 import java.io.File
+import java.lang.ref.WeakReference
 
-class ImeService : LifecycleInputMethodService(), ViewModelStoreOwner, SavedStateRegistryOwner {
+interface LiushuInputMethodServiceImpl {
+    fun commitText(text: String)
+    fun search(code: String): List<Candidate>
+    fun handleEnter()
+    fun handleDelete()
+}
+
+var ImeWeakReference = WeakReference<LiushuInputMethodServiceImpl?>(null)
+
+class LiushuInputMethodService : LifecycleInputMethodService(), ViewModelStoreOwner,
+    SavedStateRegistryOwner, LiushuInputMethodServiceImpl {
     val engine: Engine by lazy {
         val dictDir = "sunman"
         val dictFile = "sunman.trie"
@@ -40,7 +57,7 @@ class ImeService : LifecycleInputMethodService(), ViewModelStoreOwner, SavedStat
     }
 
     override fun onCreateInputView(): View {
-        val view = InputView(this)
+        val view = InputView()
 
         window?.window?.decorView?.let { decorView ->
             decorView.setViewTreeLifecycleOwner(this)
@@ -54,7 +71,23 @@ class ImeService : LifecycleInputMethodService(), ViewModelStoreOwner, SavedStat
     override fun onCreate() {
         super.onCreate()
         savedStateRegistryController.performRestore(null)
+        ImeWeakReference = WeakReference(this)
+    }
 
+    override fun commitText(text: String) {
+        currentInputConnection.commitText(text, text.length)
+    }
+
+    override fun search(code: String): List<Candidate> {
+        return engine.search(code)
+    }
+
+    override fun handleEnter() {
+        currentInputConnection.performEditorAction(EditorInfo.IME_ACTION_GO)
+    }
+
+    override fun handleDelete() {
+        sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
     }
 
     override val viewModelStore: ViewModelStore
@@ -71,4 +104,25 @@ class ImeService : LifecycleInputMethodService(), ViewModelStoreOwner, SavedStat
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
     override val savedStateRegistry: SavedStateRegistry get() = savedStateRegistryController.savedStateRegistry
+
+    private inner class InputView : AbstractComposeView(this) {
+        @Composable
+        override fun Content() {
+            LiushuTheme {
+                InputScreen()
+            }
+        }
+    }
+}
+
+class UselessLiushuInputMethodService : LiushuInputMethodServiceImpl {
+    override fun commitText(text: String) {}
+
+    override fun search(code: String): List<Candidate> {
+        return emptyList()
+    }
+
+    override fun handleEnter() {}
+
+    override fun handleDelete() {}
 }

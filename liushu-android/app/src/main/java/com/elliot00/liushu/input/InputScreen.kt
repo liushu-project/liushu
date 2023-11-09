@@ -17,9 +17,6 @@
 
 package com.elliot00.liushu.input
 
-import android.content.Context
-import android.view.KeyEvent
-import android.view.inputmethod.EditorInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -34,42 +31,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import com.elliot00.liushu.input.keyboard.KeyCode
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elliot00.liushu.input.keyboard.Keyboard
-import com.elliot00.liushu.input.keyboard.KeyboardLayout
 import com.elliot00.liushu.input.keyboard.candidate.CandidateItem
-import com.elliot00.liushu.service.ImeService
-import com.elliot00.liushu.uniffi.Candidate
 
-@Preview
 @Composable
-fun InputScreen() {
-    val ctx = LocalContext.current
-    val inputState = rememberInputState(context = ctx)
+fun InputScreen(viewModel: InputViewModel = viewModel()) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
-    if (inputState.input.isNotEmpty()) {
-        val text = if(inputState.unexhausted.isNotEmpty()) {
-            "${inputState.input} ${inputState.unexhausted}"
-        } else {
-            inputState.input
-        }
+    val input by viewModel.input.collectAsState()
+    if (input.isNotEmpty()) {
 
         Popup(alignment = Alignment.TopStart, offset = IntOffset(0, -60)) {
             Text(
-                text = text,
+                text = input,
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 8.dp)
@@ -80,17 +63,18 @@ fun InputScreen() {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
+            val candidates by viewModel.candidates.collectAsState()
             LazyRow(
                 modifier = Modifier
                     .height(40.dp)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                itemsIndexed(inputState.candidates) { index, candidate ->
+                itemsIndexed(candidates) { index, candidate ->
                     CandidateItem(
                         candidate = candidate,
-                        onClick = { inputState.commitCandidate(candidate) })
-                    if (index < inputState.candidates.lastIndex) {
+                        onClick = { viewModel.commitCandidate(candidate) })
+                    if (index < candidates.lastIndex) {
                         Divider(
                             modifier = Modifier
                                 .fillMaxHeight(0.6f)
@@ -100,133 +84,8 @@ fun InputScreen() {
                 }
             }
             Keyboard(
-                onKeyPressed = { keyCode -> inputState.handleKeyCode(keyCode) },
-                inputState.keyboardLayout
+                viewModel
             )
         }
     }
-}
-
-class InputStateHolder(private val context: Context) {
-    var input by mutableStateOf("")
-    var unexhausted by mutableStateOf("")
-    private var isCapital by mutableStateOf(false)
-    private var isAsciiMode by mutableStateOf(false)
-
-    var candidates by mutableStateOf(listOf<Candidate>())
-        private set
-
-    var keyboardLayout by mutableStateOf(KeyboardLayout.QWERTY)
-        private set
-
-    fun handleKeyCode(keyCode: KeyCode) {
-        val currentInputConnection = (context as ImeService).currentInputConnection
-        when (keyCode) {
-            is KeyCode.Alpha -> handleAlphaCode(keyCode.code)
-            is KeyCode.Delete -> {
-                if (unexhausted.isNotEmpty()) {
-                    unexhausted = unexhausted.dropLast(1)
-                } else if (input.isNotEmpty()) {
-                    input = input.dropLast(1)
-                    candidates = context.engine.search(input)
-                } else {
-                    context.sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
-                }
-            }
-
-            is KeyCode.Comma -> {
-                // TODO: shift state
-                currentInputConnection.commitText("，", 1)
-            }
-
-            is KeyCode.Space -> {
-                currentInputConnection.commitText("　", 1)
-            }
-
-            is KeyCode.Period -> {
-                currentInputConnection.commitText("。", 1)
-            }
-
-            is KeyCode.Enter -> {
-                if (input.isNotEmpty()) {
-                    commitText(input)
-                } else {
-                    currentInputConnection.performEditorAction(EditorInfo.IME_ACTION_GO)
-                }
-            }
-
-            is KeyCode.Shift -> {
-                if (input.isEmpty()) {
-                    isCapital = true
-                }
-            }
-
-            is KeyCode.Symbols -> {
-                keyboardLayout = KeyboardLayout.SYMBOLS
-            }
-
-            is KeyCode.Emoji -> {
-                keyboardLayout = KeyboardLayout.EMOJI
-            }
-
-            is KeyCode.Abc -> {
-                keyboardLayout = KeyboardLayout.QWERTY
-            }
-
-            is KeyCode.RawText -> {
-                commitText(keyCode.text)
-            }
-
-            is KeyCode.AsciiModeSwitch -> {
-                isAsciiMode = !isAsciiMode
-            }
-        }
-    }
-
-    fun commitCandidate(candidate: Candidate) {
-        commitText(candidate.text)
-    }
-
-    private fun commitText(text: String) {
-        (context as ImeService).currentInputConnection.commitText(
-            text, text.length
-        )
-
-        input = ""
-
-        if (unexhausted.isNotEmpty()) {
-            for (char in unexhausted) {
-                handleAlphaCode(char.toString())
-            }
-        } else {
-            candidates = listOf()
-        }
-    }
-
-    private fun handleAlphaCode(code: String) {
-        if (isAsciiMode) {
-            commitText(code)
-            return
-        }
-
-        if (isCapital) {
-            commitText(code.uppercase())
-            isCapital = false
-            return
-        }
-
-        val currentCandidates = (context as ImeService).engine.search(input + code)
-        if (currentCandidates.isEmpty()) {
-            unexhausted += code
-            return
-        }
-        input += code
-        candidates = currentCandidates
-        unexhausted = ""
-    }
-}
-
-@Composable
-fun rememberInputState(context: Context): InputStateHolder = remember(context) {
-    InputStateHolder(context)
 }

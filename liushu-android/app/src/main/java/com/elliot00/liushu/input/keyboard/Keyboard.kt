@@ -18,15 +18,20 @@
 package com.elliot00.liushu.input.keyboard
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.elliot00.liushu.input.InputViewModel
 import com.elliot00.liushu.input.keyboard.text.EmojiKeyboard
 import com.elliot00.liushu.input.keyboard.text.SymbolKeyboard
 
 @Composable
-fun Keyboard(onKeyPressed: (KeyCode) -> Unit, layout: KeyboardLayout) {
+fun Keyboard(viewModel: InputViewModel) {
+    val layout by viewModel.keyboardLayout.collectAsState()
+    val onKeyPressed: (KeyCode) -> Unit = { viewModel.handleKey(it) }
+
     when (layout) {
         KeyboardLayout.QWERTY -> {
-            QwertyKeyboard(onKeyPressed)
+            QwertyKeyboard(viewModel)
         }
 
         KeyboardLayout.EMOJI -> {
@@ -38,10 +43,4 @@ fun Keyboard(onKeyPressed: (KeyCode) -> Unit, layout: KeyboardLayout) {
         }
     }
 
-}
-
-@Preview
-@Composable
-fun KeyboardPreview() {
-    Keyboard(onKeyPressed = {}, layout = KeyboardLayout.QWERTY)
 }
