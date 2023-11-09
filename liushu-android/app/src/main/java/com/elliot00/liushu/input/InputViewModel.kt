@@ -97,15 +97,15 @@ class InputViewModel(
             }
 
             is KeyCode.Comma -> {
-                ime.commitText("，")
+                ime.commitText(if (_isAsciiMode.value) "," else "，")
             }
 
             is KeyCode.Space -> {
-                ime.commitText("　")
+                ime.commitText(if (_isAsciiMode.value) " " else "　")
             }
 
             is KeyCode.Period -> {
-                ime.commitText("。")
+                ime.commitText(if (_isAsciiMode.value) "." else "。")
             }
 
             is KeyCode.Symbols -> {
