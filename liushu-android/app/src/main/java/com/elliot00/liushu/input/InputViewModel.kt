@@ -68,7 +68,7 @@ class InputViewModel(
             }
 
             is KeyCode.Enter -> {
-                if (_input.value.isNotEmpty()) {
+                if (_input.value.isNotEmpty() || _inputBuffer.value.isNotEmpty()) {
                     ime.commitText(_input.value + _inputBuffer.value)
                     _input.value = ""
                     _inputBuffer.value = ""
