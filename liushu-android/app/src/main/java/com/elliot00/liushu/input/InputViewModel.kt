@@ -153,6 +153,11 @@ class InputViewModel(
             return
         }
 
+        if (_inputBuffer.value.isNotEmpty()) {
+            _inputBuffer.value += code
+            return
+        }
+
         val potentialInput = _input.value + code
         val potentialCandidates = ime.search(potentialInput)
         if (potentialCandidates.isNotEmpty()) {
