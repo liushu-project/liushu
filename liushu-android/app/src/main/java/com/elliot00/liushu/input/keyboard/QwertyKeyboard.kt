@@ -43,12 +43,9 @@ fun QwertyKeyboard(viewModel: InputViewModel) {
 
         keysMatrix.forEachIndexed { index, row ->
             Row(
-                modifier = rowModifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(
-                    4.dp,
-                    Alignment.CenterHorizontally
-                ),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = rowModifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(
+                    4.dp, Alignment.CenterHorizontally
+                ), verticalAlignment = Alignment.CenterVertically
             ) {
                 if (index == 1) {
                     Spacer(modifier = Modifier.weight(0.5f))
@@ -56,7 +53,8 @@ fun QwertyKeyboard(viewModel: InputViewModel) {
                 row.forEach { data ->
                     Key(
                         data = data,
-                        onKeyPressed = { viewModel.handleKey(it) },
+                        onKeyClick = { viewModel.handleKeyClicked(it) },
+                        onKeyLongClick = { viewModel.handleKeyLongClicked(it) },
                         modifier = Modifier.fillMaxHeight(),
                         viewModel
                     )
@@ -81,8 +79,7 @@ private val keysMatrix = arrayOf(
         KeyData(label = "i", keyCode = KeyCode.Alpha("i")),
         KeyData(label = "o", keyCode = KeyCode.Alpha("o")),
         KeyData(label = "p", keyCode = KeyCode.Alpha("p"))
-    ),
-    arrayOf(
+    ), arrayOf(
         KeyData(label = "a", keyCode = KeyCode.Alpha("a")),
         KeyData(label = "s", keyCode = KeyCode.Alpha("s")),
         KeyData(label = "d", keyCode = KeyCode.Alpha("d")),
@@ -92,8 +89,7 @@ private val keysMatrix = arrayOf(
         KeyData(label = "j", keyCode = KeyCode.Alpha("j")),
         KeyData(label = "k", keyCode = KeyCode.Alpha("k")),
         KeyData(label = "l", keyCode = KeyCode.Alpha("l"))
-    ),
-    arrayOf(
+    ), arrayOf(
         KeyData(label = "shift", keyCode = KeyCode.Shift),
         KeyData(label = "z", keyCode = KeyCode.Alpha("z")),
         KeyData(label = "x", keyCode = KeyCode.Alpha("x")),
@@ -103,8 +99,7 @@ private val keysMatrix = arrayOf(
         KeyData(label = "n", keyCode = KeyCode.Alpha("n")),
         KeyData(label = "m", keyCode = KeyCode.Alpha("m")),
         KeyData(label = "删除", keyCode = KeyCode.Delete),
-    ),
-    arrayOf(
+    ), arrayOf(
         KeyData(label = "?123", keyCode = KeyCode.Symbols),
         KeyData(label = "，", keyCode = KeyCode.Comma),
         KeyData(label = "ascii", keyCode = KeyCode.AsciiModeSwitch),

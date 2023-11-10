@@ -17,8 +17,10 @@
 
 package com.elliot00.liushu.input.keyboard
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -34,10 +36,12 @@ import androidx.compose.ui.res.painterResource
 import com.elliot00.liushu.R
 import com.elliot00.liushu.input.InputViewModel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RowScope.Key(
     data: KeyData,
-    onKeyPressed: (KeyCode) -> Unit,
+    onKeyClick: (KeyCode) -> Unit,
+    onKeyLongClick: (KeyCode) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: InputViewModel
 ) {
@@ -52,7 +56,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.extraLarge)
                     .weight(1.5f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -74,9 +78,10 @@ fun RowScope.Key(
                     )
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(1.5f)
-                    .clickable {
-                        onKeyPressed(data.keyCode)
-                    },
+                    .combinedClickable(
+                        onClick = { onKeyClick(data.keyCode) },
+                        onLongClick = { onKeyLongClick(data.keyCode) },
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -98,7 +103,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(1.5f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -121,7 +126,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(1f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -144,7 +149,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.extraLarge)
                     .weight(1.5f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -166,7 +171,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(4f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -189,7 +194,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(1f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -212,7 +217,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(1f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -235,7 +240,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(1f)
                     .clickable {
-                        onKeyPressed(data.keyCode)
+                        onKeyClick(data.keyCode)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center

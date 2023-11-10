@@ -17,11 +17,11 @@
 
 package com.elliot00.liushu
 
+import com.elliot00.liushu.input.CapsLockState
 import com.elliot00.liushu.input.InputViewModel
 import com.elliot00.liushu.input.keyboard.KeyCode
 import com.elliot00.liushu.service.LiushuInputMethodServiceImpl
 import io.mockk.Runs
-import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -43,9 +43,9 @@ class InputViewModelTest {
     @Test
     fun inputViewModel_DeleteWithNotEmptyCandidates_InputCleared() {
         every { mockIme.search(any()) } returns emptyList()
-        viewModel.handleKey(KeyCode.Alpha("a"))
+        viewModel.handleKeyClicked(KeyCode.Alpha("a"))
 
-        viewModel.handleKey(KeyCode.Delete)
+        viewModel.handleKeyClicked(KeyCode.Delete)
 
         assertTrue(viewModel.input.value.isEmpty())
     }
@@ -54,7 +54,7 @@ class InputViewModelTest {
     fun inputViewModel_EnterWithEmptyInput_NoInteraction() {
         every { mockIme.handleEnter() } just Runs
 
-        viewModel.handleKey(KeyCode.Enter)
+        viewModel.handleKeyClicked(KeyCode.Enter)
 
         verify { mockIme.handleEnter() }
         verify(inverse = true) {
@@ -65,15 +65,48 @@ class InputViewModelTest {
     @Test
     fun inputViewModel_EnterWithNonEmptyInput_TextCommittedAndInputCleared() {
         every { mockIme.search(any()) } returns emptyList()
-        viewModel.handleKey(KeyCode.Alpha("a"))
+        viewModel.handleKeyClicked(KeyCode.Alpha("a"))
 
         every { mockIme.commitText(any()) } just Runs
-        viewModel.handleKey(KeyCode.Enter)
+        viewModel.handleKeyClicked(KeyCode.Enter)
 
         verify {
             mockIme.commitText("a")
         }
 
         assertEquals("", viewModel.input.value)
+    }
+
+    @Test
+    fun inputViewModel_LongClickShift_CapsLockEnabled() {
+        viewModel.handleKeyLongClicked(KeyCode.Shift)
+        assertEquals(CapsLockState.ACTIVATED, viewModel.capsLockState.value)
+
+        every { mockIme.commitText(any()) } just Runs
+        viewModel.handleKeyClicked(KeyCode.Alpha("a"))
+
+        verify { mockIme.commitText("A") }
+        assertEquals(CapsLockState.ACTIVATED, viewModel.capsLockState.value)
+    }
+
+    @Test
+    fun inputViewModel_ClickShift_CapsLockEnabledForSingleLetter() {
+        viewModel.handleKeyClicked(KeyCode.Shift)
+        assertEquals(CapsLockState.SINGLE_LETTER, viewModel.capsLockState.value)
+
+        every { mockIme.commitText(any()) } just Runs
+        viewModel.handleKeyClicked(KeyCode.Alpha("a"))
+
+        verify { mockIme.commitText("A") }
+        assertEquals(CapsLockState.DEACTIVATED, viewModel.capsLockState.value)
+    }
+
+    @Test
+    fun inputViewModel_ClickShiftAfterLocked_CapsLockDisabled() {
+        viewModel.handleKeyLongClicked(KeyCode.Shift)
+        assertEquals(CapsLockState.ACTIVATED, viewModel.capsLockState.value)
+
+        viewModel.handleKeyClicked(KeyCode.Shift)
+        assertEquals(CapsLockState.DEACTIVATED, viewModel.capsLockState.value)
     }
 }

@@ -27,7 +27,7 @@ import com.elliot00.liushu.input.keyboard.text.SymbolKeyboard
 @Composable
 fun Keyboard(viewModel: InputViewModel) {
     val layout by viewModel.keyboardLayout.collectAsState()
-    val onKeyPressed: (KeyCode) -> Unit = { viewModel.handleKey(it) }
+    val onKeyPressed: (KeyCode) -> Unit = { viewModel.handleKeyClicked(it) }
 
     when (layout) {
         KeyboardLayout.QWERTY -> {

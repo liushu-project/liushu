@@ -39,7 +39,8 @@ class InputViewModel(
 ) : ViewModel() {
     private var _isAsciiMode = MutableStateFlow(false)
     val isAsciiMode: StateFlow<Boolean> = _isAsciiMode.asStateFlow()
-    private var _isCapital = MutableStateFlow(false)
+    private var _capsLockState = MutableStateFlow(CapsLockState.DEACTIVATED)
+    val capsLockState = _capsLockState.asStateFlow()
 
     private var _input = MutableStateFlow("")
     private var _inputBuffer = MutableStateFlow("")
@@ -53,7 +54,7 @@ class InputViewModel(
     private var _keyboardLayout = MutableStateFlow(KeyboardLayout.QWERTY)
     val keyboardLayout = _keyboardLayout.asStateFlow()
 
-    fun handleKey(keyCode: KeyCode) {
+    fun handleKeyClicked(keyCode: KeyCode) {
         when (keyCode) {
             is KeyCode.Alpha -> {
                 handleValidAlphaKey(keyCode.code)
@@ -91,8 +92,13 @@ class InputViewModel(
             }
 
             is KeyCode.Shift -> {
+                if (_capsLockState.value == CapsLockState.ACTIVATED || _capsLockState.value == CapsLockState.SINGLE_LETTER) {
+                    _capsLockState.value = CapsLockState.DEACTIVATED
+                    return
+                }
+
                 if (_input.value.isEmpty()) {
-                    _isCapital.value = true
+                    _capsLockState.value = CapsLockState.SINGLE_LETTER
                 }
             }
 
@@ -124,6 +130,16 @@ class InputViewModel(
         }
     }
 
+    fun handleKeyLongClicked(keyCode: KeyCode) {
+        when (keyCode) {
+            is KeyCode.Shift -> {
+                _capsLockState.value = CapsLockState.ACTIVATED
+            }
+
+            else -> {}
+        }
+    }
+
     fun commitCandidate(candidate: Candidate) {
         _input.value = ""
         ime.commitText(candidate.text).also { _candidates.value = emptyList() }
@@ -147,10 +163,19 @@ class InputViewModel(
             return
         }
 
-        if (_isCapital.value) {
-            ime.commitText(code.uppercase())
-            _isCapital.value = false
-            return
+        when (_capsLockState.value) {
+            CapsLockState.ACTIVATED -> {
+                ime.commitText(code.uppercase())
+                return
+            }
+
+            CapsLockState.SINGLE_LETTER -> {
+                ime.commitText(code.uppercase())
+                _capsLockState.value = CapsLockState.DEACTIVATED
+                return
+            }
+
+            CapsLockState.DEACTIVATED -> {}
         }
 
         if (_inputBuffer.value.isNotEmpty()) {
@@ -167,4 +192,8 @@ class InputViewModel(
             _inputBuffer.value += code
         }
     }
+}
+
+enum class CapsLockState {
+    DEACTIVATED, SINGLE_LETTER, ACTIVATED
 }
