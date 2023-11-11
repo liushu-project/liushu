@@ -31,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +38,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elliot00.liushu.input.keyboard.candidate.CandidateItem
 
@@ -46,7 +46,7 @@ import com.elliot00.liushu.input.keyboard.candidate.CandidateItem
 fun InputScreen(viewModel: InputViewModel = viewModel()) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
-    val input by viewModel.input.collectAsState()
+    val input by viewModel.input.collectAsStateWithLifecycle()
     if (input.isNotEmpty()) {
 
         Popup(alignment = Alignment.TopStart, offset = IntOffset(0, -60)) {
@@ -62,7 +62,7 @@ fun InputScreen(viewModel: InputViewModel = viewModel()) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            val candidates by viewModel.candidates.collectAsState()
+            val candidates by viewModel.candidates.collectAsStateWithLifecycle()
             LazyRow(
                 modifier = Modifier
                     .height(40.dp)
