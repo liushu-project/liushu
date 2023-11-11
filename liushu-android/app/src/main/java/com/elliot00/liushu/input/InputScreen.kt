@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.elliot00.liushu.input.keyboard.Keyboard
 import com.elliot00.liushu.input.keyboard.candidate.CandidateItem
 
 @Composable
@@ -83,9 +82,7 @@ fun InputScreen(viewModel: InputViewModel = viewModel()) {
                     }
                 }
             }
-            Keyboard(
-                viewModel
-            )
+            MainInputArea(viewModel = viewModel)
         }
     }
 }

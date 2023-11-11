@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import com.elliot00.liushu.R
 import com.elliot00.liushu.input.InputViewModel
+import com.elliot00.liushu.input.MainInputAreaContentType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -43,7 +44,8 @@ fun RowScope.Key(
     onKeyClick: (KeyCode) -> Unit,
     onKeyLongClick: (KeyCode) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: InputViewModel
+    viewModel: InputViewModel,
+    onMainContentChange: (MainInputAreaContentType) -> Unit
 ) {
     when (data.keyCode) {
         is KeyCode.Enter -> {
@@ -149,7 +151,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.extraLarge)
                     .weight(1.5f)
                     .clickable {
-                        onKeyClick(data.keyCode)
+                        onMainContentChange(MainInputAreaContentType.SYMBOLS_PICKER)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
@@ -194,7 +196,7 @@ fun RowScope.Key(
                     .clip(shape = MaterialTheme.shapes.medium)
                     .weight(1f)
                     .clickable {
-                        onKeyClick(data.keyCode)
+                        onMainContentChange(MainInputAreaContentType.EMOJIS_PICKER)
                     },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center

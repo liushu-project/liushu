@@ -1,28 +1,28 @@
 /*
- *     Copyright (C) 2023  Elliot Xu
+ * Copyright (C) 2023  Elliot Xu
  *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Affero General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *     You should have received a copy of the GNU Affero General Public License
- *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.elliot00.liushu.input.keyboard.text
+package com.elliot00.liushu.input.picker
 
 import androidx.compose.runtime.Composable
 import com.elliot00.liushu.input.keyboard.KeyCode
 
 @Composable
-fun SymbolKeyboard(onKeyPressed: (KeyCode) -> Unit) {
-    SymbolPicker(symbolsData = symbolsMatrix, onKeyPressed = onKeyPressed)
+fun SymbolsPicker(onKeyPressed: (KeyCode) -> Unit, onGoBack: () -> Unit) {
+    GeneralPicker(symbolsData = symbolsMatrix, onKeyPressed = onKeyPressed, onGoBack = onGoBack)
 }
 
 // Symbols from https://github.com/fcitx5-android/fcitx5-android/

@@ -29,9 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.elliot00.liushu.input.InputViewModel
+import com.elliot00.liushu.input.MainInputAreaContentType
 
 @Composable
-fun QwertyKeyboard(viewModel: InputViewModel) {
+fun QwertyKeyboard(viewModel: InputViewModel, onMainContentChange: (MainInputAreaContentType) -> Unit) {
     Column(
         Modifier
             .padding(4.dp)
@@ -56,7 +57,8 @@ fun QwertyKeyboard(viewModel: InputViewModel) {
                         onKeyClick = { viewModel.handleKeyClicked(it) },
                         onKeyLongClick = { viewModel.handleKeyLongClicked(it) },
                         modifier = Modifier.fillMaxHeight(),
-                        viewModel
+                        viewModel,
+                        onMainContentChange = onMainContentChange
                     )
                 }
                 if (index == 1) {

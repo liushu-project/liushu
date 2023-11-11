@@ -51,9 +51,6 @@ class InputViewModel(
     private var _candidates = MutableStateFlow<List<Candidate>>(emptyList())
     val candidates: StateFlow<List<Candidate>> = _candidates.asStateFlow()
 
-    private var _keyboardLayout = MutableStateFlow(KeyboardLayout.QWERTY)
-    val keyboardLayout = _keyboardLayout.asStateFlow()
-
     fun handleKeyClicked(keyCode: KeyCode) {
         when (keyCode) {
             is KeyCode.Alpha -> {
@@ -112,18 +109,6 @@ class InputViewModel(
 
             is KeyCode.Period -> {
                 ime.commitText(if (_isAsciiMode.value) "." else "。")
-            }
-
-            is KeyCode.Symbols -> {
-                _keyboardLayout.value = KeyboardLayout.SYMBOLS
-            }
-
-            is KeyCode.Emoji -> {
-                _keyboardLayout.value = KeyboardLayout.EMOJI
-            }
-
-            is KeyCode.Abc -> {
-                _keyboardLayout.value = KeyboardLayout.QWERTY
             }
 
             else -> {}
