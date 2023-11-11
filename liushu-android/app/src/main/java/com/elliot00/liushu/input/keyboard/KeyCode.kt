@@ -26,8 +26,5 @@ sealed class KeyCode {
     object Period : KeyCode()
     object Space : KeyCode()
     object Enter : KeyCode()
-    object Symbols : KeyCode()
-    object Emoji : KeyCode()
-    object Abc : KeyCode()
     object AsciiModeSwitch : KeyCode()
 }

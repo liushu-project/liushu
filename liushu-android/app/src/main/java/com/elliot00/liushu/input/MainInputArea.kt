@@ -23,7 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.elliot00.liushu.input.keyboard.KeyCode
-import com.elliot00.liushu.input.keyboard.QwertyKeyboard
+import com.elliot00.liushu.input.keyboard.layout.preset.SunmanKeyboardLayout
 import com.elliot00.liushu.input.picker.EmojisPicker
 import com.elliot00.liushu.input.picker.SymbolsPicker
 
@@ -35,11 +35,13 @@ fun MainInputArea(viewModel: InputViewModel) {
 
     when (contentType) {
         MainInputAreaContentType.KEYBOARD -> {
-            QwertyKeyboard(viewModel = viewModel, onMainContentChange = { contentType = it })
+            SunmanKeyboardLayout(onMainContentTypeChange = { contentType = it }, viewModel)
         }
+
         MainInputAreaContentType.EMOJIS_PICKER -> {
             EmojisPicker(onKeyPressed = onKeyPressed, onGoBack = onGoBack)
         }
+
         MainInputAreaContentType.SYMBOLS_PICKER -> {
             SymbolsPicker(onKeyPressed = onKeyPressed, onGoBack = onGoBack)
         }
@@ -47,7 +49,5 @@ fun MainInputArea(viewModel: InputViewModel) {
 }
 
 enum class MainInputAreaContentType {
-    KEYBOARD,
-    EMOJIS_PICKER,
-    SYMBOLS_PICKER
+    KEYBOARD, EMOJIS_PICKER, SYMBOLS_PICKER
 }

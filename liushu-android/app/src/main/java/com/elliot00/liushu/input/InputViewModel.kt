@@ -20,7 +20,6 @@ package com.elliot00.liushu.input
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.elliot00.liushu.input.keyboard.KeyCode
-import com.elliot00.liushu.input.keyboard.KeyboardLayout
 import com.elliot00.liushu.service.ImeWeakReference
 import com.elliot00.liushu.service.LiushuInputMethodServiceImpl
 import com.elliot00.liushu.service.UselessLiushuInputMethodService
