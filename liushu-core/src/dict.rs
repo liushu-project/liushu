@@ -1,5 +1,7 @@
 use std::{fs::File, path::Path};
 
+use fst::{IntoStreamer, Map, MapBuilder, Streamer};
+use memmap2::{Mmap, MmapOptions};
 use patricia_tree::PatriciaMap;
 use serde::{Deserialize, Serialize};
 
@@ -42,4 +44,22 @@ where
     bincode::serialize_into(trie_writer, &trie)?;
 
     Ok(())
+}
+
+pub struct Dictionary2 {
+    map: Map<Mmap>,
+}
+
+impl Dictionary2 {
+    pub fn new(bin_path: impl AsRef<Path>) -> Result<Self, LiushuError> {
+        let file = File::open(bin_path)?;
+        let mmap = unsafe { MmapOptions::new().map(&file)? };
+        let map = Map::new(mmap).unwrap();
+        Ok(Self { map })
+    }
+
+    pub fn query(self) {
+        let mut stream = self.map.range().ge("clar").into_stream();
+        let kvs = stream.into_str_vec().unwrap();
+    }
 }
