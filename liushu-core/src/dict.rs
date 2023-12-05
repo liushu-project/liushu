@@ -1,11 +1,11 @@
 use std::{fs::File, path::Path};
 
-use patricia_tree::PatriciaMap;
+use patricia_tree::StringPatriciaMap;
 use serde::{Deserialize, Serialize};
 
 use crate::error::LiushuError;
 
-pub type Dictionary = PatriciaMap<Vec<DictItem>>;
+pub type Dictionary = StringPatriciaMap<Vec<DictItem>>;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DictItem {
@@ -20,7 +20,7 @@ where
     I: AsRef<Path>,
     O: AsRef<Path>,
 {
-    let mut trie = PatriciaMap::new();
+    let mut trie = StringPatriciaMap::new();
     for dict_path in inputs {
         let mut rdr = csv::ReaderBuilder::new()
             .delimiter(b'\t')
@@ -31,7 +31,7 @@ where
             let code = item.code.clone();
 
             if trie.get(&code).is_none() {
-                trie.insert_str(code.as_str(), vec![item]);
+                trie.insert(&code, vec![item]);
             } else if let Some(entry) = trie.get_mut(code.as_str()) {
                 entry.push(item);
             }

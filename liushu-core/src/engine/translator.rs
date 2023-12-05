@@ -14,7 +14,7 @@ impl Translator for Dictionary {
             return vec![];
         }
 
-        self.iter_prefix(code.as_bytes())
+        self.iter_prefix(code)
             .flat_map(|(_, value)| {
                 value.iter().map(|item| Candidate {
                     text: item.text.clone(),

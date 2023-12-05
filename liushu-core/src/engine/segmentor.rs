@@ -1,17 +1,15 @@
-use patricia_tree::PatriciaMap;
+use patricia_tree::StringPatriciaMap;
 
 pub trait Segmentor {
     fn segment(&self, code: &str) -> Vec<String>;
 }
 
-impl<V> Segmentor for PatriciaMap<V> {
+impl<V> Segmentor for StringPatriciaMap<V> {
     fn segment(&self, code: &str) -> Vec<String> {
         let mut result = Vec::new();
         let mut remaining = code;
         while !remaining.is_empty() {
-            if let Some((bytes, _)) = self.get_longest_common_prefix(remaining) {
-                let match_str = String::from_utf8_lossy(bytes);
-                let match_str = match_str.trim();
+            if let Some((match_str, _)) = self.get_longest_common_prefix(remaining) {
                 result.push(match_str.to_string());
                 remaining = &remaining[match_str.len()..];
             } else {
@@ -28,11 +26,11 @@ mod tests {
 
     #[test]
     fn test_split_pinyin() {
-        let mut trie = PatriciaMap::new();
-        trie.insert_str("nihao", vec!["你好".to_string()]);
-        trie.insert_str("ke", vec!["可".to_string()]);
-        trie.insert_str("yi", vec!["以".to_string()]);
-        trie.insert_str("a", vec!["啊".to_string()]);
+        let mut trie = StringPatriciaMap::new();
+        trie.insert("nihao", vec!["你好".to_string()]);
+        trie.insert("ke", vec!["可".to_string()]);
+        trie.insert("yi", vec!["以".to_string()]);
+        trie.insert("a", vec!["啊".to_string()]);
 
         assert_eq!(trie.segment("nihaoa"), vec!["nihao", "a"]);
         assert_eq!(trie.segment("keyi"), vec!["ke", "yi"]);
