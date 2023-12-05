@@ -13,6 +13,7 @@ impl<V> Segmentor for StringPatriciaMap<V> {
                 result.push(match_str.to_string());
                 remaining = &remaining[match_str.len()..];
             } else {
+                result.push(remaining.to_string());
                 break;
             }
         }
@@ -36,7 +37,11 @@ mod tests {
         assert_eq!(trie.segment("keyi"), vec!["ke", "yi"]);
         assert_eq!(trie.segment("aaaaa"), vec!["a", "a", "a", "a", "a"]);
 
-        assert_eq!(trie.segment("keyide"), vec!["ke", "yi"]);
+        // empty
         assert_eq!(trie.segment(""), vec![] as Vec<String>);
+
+        // unrecognized
+        assert_eq!(trie.segment("keyide"), vec!["ke", "yi", "de"]);
+        assert_eq!(trie.segment("ni"), vec!["ni"]);
     }
 }
