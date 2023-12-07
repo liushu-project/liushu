@@ -20,4 +20,6 @@ interface Engine {
 
     [Throws=LiushuError]
     sequence<Candidate> search([ByRef] string code);
+
+    sequence<string> segment([ByRef] string code);
 };

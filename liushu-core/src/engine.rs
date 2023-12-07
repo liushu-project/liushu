@@ -6,7 +6,7 @@ use std::{fs::File, path::Path};
 
 use crate::{dict::Dictionary, dirs::MyProjectDirs, error::LiushuError};
 
-use self::{candidates::Candidate, translator::Translator};
+use self::{candidates::Candidate, segmentor::Segmentor, translator::Translator};
 
 pub trait InputMethodEngine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError>;
@@ -35,5 +35,11 @@ impl Engine {
 impl InputMethodEngine for Engine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError> {
         Ok(self.trie.translate(code))
+    }
+}
+
+impl Segmentor for Engine {
+    fn segment(&self, code: &str) -> Vec<String> {
+        self.trie.segment(code)
     }
 }
