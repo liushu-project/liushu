@@ -6,15 +6,16 @@ pub trait Segmentor {
 
 impl<V> Segmentor for StringPatriciaMap<V> {
     fn segment(&self, code: &str) -> Vec<String> {
-        let mut result = Vec::new();
-        let mut remaining = code;
-        while !remaining.is_empty() {
-            if let Some((match_str, _)) = self.get_longest_common_prefix(remaining) {
-                result.push(match_str.to_string());
-                remaining = &remaining[match_str.len()..];
+        let mut result = vec![];
+        let mut last = 0;
+        while last < code.len() {
+            let lcp = self.longest_common_prefix_len(&code[last..]);
+            if lcp > 0 {
+                result.push(code[last..last + lcp].to_string());
+                last += lcp;
             } else {
-                result.push(remaining.to_string());
-                break;
+                result.push(code[last..].to_string());
+                last = code.len();
             }
         }
         result
@@ -43,5 +44,9 @@ mod tests {
         // unrecognized
         assert_eq!(trie.segment("keyide"), vec!["ke", "yi", "de"]);
         assert_eq!(trie.segment("ni"), vec!["ni"]);
+
+        // partial
+        assert_eq!(trie.segment("keya"), vec!["ke", "y", "a"]);
+        assert_eq!(trie.segment("nihke"), vec!["nih", "ke"]);
     }
 }
