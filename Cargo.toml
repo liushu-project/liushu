@@ -9,6 +9,7 @@ edition = "2021"
 liushu-core = { path = "liushu-core" }
 wayland-client = { version = "0.31.1" }
 wayland-protocols = { version = "0.31.0", features = ["unstable", "client"] }
+evdev = "0.12.1"
 
 [dev-dependencies]
 criterion = "0.3"
