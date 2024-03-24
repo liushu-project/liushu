@@ -1,3 +1,4 @@
+use liushu_core::engine::Engine;
 use wayland_client::{
     event_created_child,
     protocol::{
@@ -33,6 +34,7 @@ fn main() {
 #[derive(Default)]
 struct AppState {
     running: bool,
+    input: String,
     input_method: Option<zwp_input_method_v1::ZwpInputMethodV1>,
     context: Option<zwp_input_method_context_v1::ZwpInputMethodContextV1>,
 }
@@ -132,9 +134,7 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
                 state: WEnum::Value(KeyState::Pressed),
                 ..
             } => {
-                let new_key = key + 1;
-
-                let key_string = match new_key {
+                let key_string = match key {
                     16 => "q",
                     17 => "w",
                     18 => "e",

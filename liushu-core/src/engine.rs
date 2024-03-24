@@ -23,13 +23,6 @@ impl Engine {
 
         Ok(Self { trie })
     }
-
-    pub fn init(proj_dirs: &MyProjectDirs) -> Result<Self, LiushuError> {
-        let trie: Dictionary =
-            bincode::deserialize_from(File::open(proj_dirs.target_dir.join("sunman.trie"))?)?;
-
-        Ok(Self { trie })
-    }
 }
 
 impl InputMethodEngine for Engine {
