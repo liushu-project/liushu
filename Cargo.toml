@@ -6,9 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { workspace = true }
-
 liushu-core = { path = "liushu-core" }
+wayland-client = { version = "0.31.1" }
+wayland-protocols = { version = "0.31.0", features = ["unstable", "client"] }
+evdev = "0.12.1"
 
 [dev-dependencies]
 criterion = "0.3"
@@ -22,7 +23,6 @@ members = [
     "liushu-core",
     "liushu-dict",
     "liushu-ffi",
-    "liushu-ls",
     "liushu-ngram",
     "uniffi-bindgen",
 ]

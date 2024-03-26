@@ -19,10 +19,15 @@
       {
         devShells = {
           default = mkShell {
-            buildInputs = [
+            nativeBuildInputs = [
               (pkgs.rust-bin.stable."1.71.1".default.override {
                 extensions = [ "rust-src" ];
               })
+
+              pkg-config
+            ];
+
+            buildInputs = [
             ];
           };
         };
