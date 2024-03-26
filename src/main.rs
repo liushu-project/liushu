@@ -37,6 +37,8 @@ struct AppState {
     input: String,
     input_method: Option<zwp_input_method_v1::ZwpInputMethodV1>,
     context: Option<zwp_input_method_context_v1::ZwpInputMethodContextV1>,
+    input_serial: u32,
+    engine: Engine,
 }
 
 impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
@@ -98,7 +100,7 @@ impl Dispatch<zwp_input_method_v1::ZwpInputMethodV1, ()> for AppState {
 
 impl Dispatch<zwp_input_method_context_v1::ZwpInputMethodContextV1, ()> for AppState {
     fn event(
-        _state: &mut Self,
+        state: &mut Self,
         _context: &zwp_input_method_context_v1::ZwpInputMethodContextV1,
         event: zwp_input_method_context_v1::Event,
         _data: &(),
@@ -113,6 +115,9 @@ impl Dispatch<zwp_input_method_context_v1::ZwpInputMethodContextV1, ()> for AppS
                 anchor,
             } => {
                 println!("{} {} {}", text, cursor, anchor);
+            }
+            zwp_input_method_context_v1::Event::CommitState { serial } => {
+                state.input_serial = serial
             }
             _ => {}
         }
@@ -134,7 +139,7 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
                 state: WEnum::Value(KeyState::Pressed),
                 ..
             } => {
-                let key_string = match key {
+                let key_str = match key {
                     16 => "q",
                     17 => "w",
                     18 => "e",
@@ -173,9 +178,10 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
                     53 => "/",
                     _ => "",
                 };
+                state.input.push_str(key_str);
 
                 if let Some(context) = &state.context {
-                    context.commit_string(1, key_string.to_string());
+                    context.commit_string(state.input_serial, key_str.to_string());
                 }
             }
             _ => {}

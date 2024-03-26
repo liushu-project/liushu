@@ -4,7 +4,7 @@ pub mod translator;
 
 use std::{fs::File, path::Path};
 
-use crate::{dict::Dictionary, dirs::MyProjectDirs, error::LiushuError};
+use crate::{dict::Dictionary, error::LiushuError};
 
 use self::{candidates::Candidate, segmentor::Segmentor, translator::Translator};
 
