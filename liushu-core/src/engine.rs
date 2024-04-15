@@ -12,7 +12,7 @@ pub trait InputMethodEngine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Engine {
     trie: Dictionary,
 }

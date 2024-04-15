@@ -23,6 +23,7 @@ fn main() {
 
     let mut state = AppState {
         running: true,
+        engine: Engine::new("~/.config/liushu/sunman.trie").expect("Open dict error"),
         ..Default::default()
     };
 
