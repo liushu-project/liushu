@@ -11,6 +11,7 @@ wayland-client = { version = "0.31.2" }
 wayland-protocols = { version = "0.31.2", features = ["unstable", "client"] }
 evdev = "0.12.1"
 xdg = "2.5.2"
+tempfile = "3.10.1"
 
 [workspace]
 members = [

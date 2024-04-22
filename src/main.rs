@@ -1,15 +1,23 @@
+use std::fs::File;
+use std::os::fd::AsFd;
+
 use liushu_core::engine::Engine;
 use wayland_client::{
-    event_created_child,
+    delegate_noop, event_created_child,
     protocol::{
+        wl_buffer, wl_compositor,
         wl_keyboard::{self, KeyState},
-        wl_registry,
+        wl_registry, wl_shm, wl_shm_pool, wl_surface,
     },
     Connection, Dispatch, QueueHandle, WEnum,
 };
-use wayland_protocols::wp::input_method::zv1::client::{
-    zwp_input_method_context_v1,
-    zwp_input_method_v1::{self, EVT_ACTIVATE_OPCODE},
+use wayland_protocols::{
+    wp::input_method::zv1::client::{
+        zwp_input_method_context_v1,
+        zwp_input_method_v1::{self, EVT_ACTIVATE_OPCODE},
+        zwp_input_panel_v1,
+    },
+    xdg::shell::client::{xdg_surface, xdg_toplevel, xdg_wm_base},
 };
 
 fn main() {
@@ -23,7 +31,7 @@ fn main() {
 
     let mut state = AppState {
         running: true,
-        engine: Engine::new("~/.config/liushu/sunman.trie").expect("Open dict error"),
+        engine: Engine::new("/home/elliot/.config/liushu/sunman.trie").expect("Open dict error"),
         ..Default::default()
     };
 
@@ -40,6 +48,11 @@ struct AppState {
     context: Option<zwp_input_method_context_v1::ZwpInputMethodContextV1>,
     input_serial: u32,
     engine: Engine,
+    input_panel_surface: Option<wl_surface::WlSurface>,
+    buffer: Option<wl_buffer::WlBuffer>,
+    wm_base: Option<xdg_wm_base::XdgWmBase>,
+    xdg_surface: Option<(xdg_surface::XdgSurface, xdg_toplevel::XdgToplevel)>,
+    configured: bool,
 }
 
 impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
@@ -57,14 +70,147 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
         {
             println!("{} {}", name, interface);
             match &interface[..] {
+                "wl_compositor" => {
+                    let compositor =
+                        registry.bind::<wl_compositor::WlCompositor, _, _>(name, 1, qh, ());
+                    let surface = compositor.create_surface(qh, ());
+                    state.input_panel_surface = Some(surface);
+
+                    if state.wm_base.is_some() && state.xdg_surface.is_none() {
+                        state.init_xdg_surface(qh);
+                    }
+                }
+                "wl_shm" => {
+                    let shm = registry.bind::<wl_shm::WlShm, _, _>(name, 1, qh, ());
+
+                    let (init_w, init_h) = (320, 240);
+
+                    let mut file = tempfile::tempfile().unwrap();
+                    draw(&mut file, (init_w, init_h));
+                    let pool = shm.create_pool(file.as_fd(), (init_w * init_h * 4) as i32, qh, ());
+                    let buffer = pool.create_buffer(
+                        0,
+                        init_w as i32,
+                        init_h as i32,
+                        (init_w * 4) as i32,
+                        wl_shm::Format::Argb8888,
+                        qh,
+                        (),
+                    );
+                    state.buffer = Some(buffer.clone());
+
+                    if state.configured {
+                        let surface = state.input_panel_surface.as_ref().unwrap();
+                        surface.attach(Some(&buffer), 0, 0);
+                        surface.commit();
+                    }
+                }
+                "xdg_wm_base" => {
+                    let wm_base = registry.bind::<xdg_wm_base::XdgWmBase, _, _>(name, 1, qh, ());
+                    state.wm_base = Some(wm_base);
+
+                    if state.input_panel_surface.is_some() && state.xdg_surface.is_none() {
+                        state.init_xdg_surface(qh);
+                    }
+                }
+
                 "zwp_input_method_v1" => {
                     let input_method = registry
                         .bind::<zwp_input_method_v1::ZwpInputMethodV1, _, _>(name, 1, qh, ());
                     state.input_method = Some(input_method);
                 }
+                "zwp_input_panel_v1" => {
+                    let _input_panel =
+                        registry.bind::<zwp_input_panel_v1::ZwpInputPanelV1, _, _>(name, 1, qh, ());
+                }
                 _ => {}
             }
         }
+    }
+}
+
+delegate_noop!(AppState: ignore wl_compositor::WlCompositor);
+delegate_noop!(AppState: ignore wl_surface::WlSurface);
+delegate_noop!(AppState: ignore wl_shm::WlShm);
+delegate_noop!(AppState: ignore wl_shm_pool::WlShmPool);
+delegate_noop!(AppState: ignore wl_buffer::WlBuffer);
+
+fn draw(tmp: &mut File, (buf_x, buf_y): (u32, u32)) {
+    use std::{cmp::min, io::Write};
+    let mut buf = std::io::BufWriter::new(tmp);
+    for y in 0..buf_y {
+        for x in 0..buf_x {
+            let a = 0xFF;
+            let r = min(((buf_x - x) * 0xFF) / buf_x, ((buf_y - y) * 0xFF) / buf_y);
+            let g = min((x * 0xFF) / buf_x, ((buf_y - y) * 0xFF) / buf_y);
+            let b = min(((buf_x - x) * 0xFF) / buf_x, (y * 0xFF) / buf_y);
+            buf.write_all(&[b as u8, g as u8, r as u8, a as u8])
+                .unwrap();
+        }
+    }
+    buf.flush().unwrap();
+}
+
+impl AppState {
+    fn init_xdg_surface(&mut self, qh: &QueueHandle<AppState>) {
+        let wm_base = self.wm_base.as_ref().unwrap();
+        let base_surface = self.input_panel_surface.as_ref().unwrap();
+
+        let xdg_surface = wm_base.get_xdg_surface(base_surface, qh, ());
+        let toplevel = xdg_surface.get_toplevel(qh, ());
+
+        base_surface.commit();
+
+        self.xdg_surface = Some((xdg_surface, toplevel));
+    }
+}
+
+impl Dispatch<xdg_wm_base::XdgWmBase, ()> for AppState {
+    fn event(
+        _: &mut Self,
+        wm_base: &xdg_wm_base::XdgWmBase,
+        event: xdg_wm_base::Event,
+        _: &(),
+        _: &Connection,
+        _: &QueueHandle<Self>,
+    ) {
+        if let xdg_wm_base::Event::Ping { serial } = event {
+            wm_base.pong(serial);
+        }
+    }
+}
+
+impl Dispatch<xdg_surface::XdgSurface, ()> for AppState {
+    fn event(
+        state: &mut Self,
+        xdg_surface: &xdg_surface::XdgSurface,
+        event: xdg_surface::Event,
+        _: &(),
+        _: &Connection,
+        _: &QueueHandle<Self>,
+    ) {
+        if let xdg_surface::Event::Configure { serial, .. } = event {
+            xdg_surface.ack_configure(serial);
+            state.configured = true;
+            let surface = state.input_panel_surface.as_ref().unwrap();
+            if let Some(ref buffer) = state.buffer {
+                surface.attach(Some(buffer), 0, 0);
+                surface.commit();
+            }
+        }
+    }
+}
+
+impl Dispatch<xdg_toplevel::XdgToplevel, ()> for AppState {
+    fn event(
+        state: &mut Self,
+        _: &xdg_toplevel::XdgToplevel,
+        event: xdg_toplevel::Event,
+        _: &(),
+        _: &Connection,
+        _: &QueueHandle<Self>,
+    ) {
+        // todo
     }
 }
 
@@ -187,5 +333,18 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
             }
             _ => {}
         }
+    }
+}
+
+impl Dispatch<zwp_input_panel_v1::ZwpInputPanelV1, ()> for AppState {
+    fn event(
+        _: &mut Self,
+        _: &zwp_input_panel_v1::ZwpInputPanelV1,
+        _: zwp_input_panel_v1::Event,
+        _: &(),
+        _: &Connection,
+        _: &QueueHandle<Self>,
+    ) {
+        println!("input panel event");
     }
 }
