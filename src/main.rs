@@ -15,7 +15,7 @@ use wayland_protocols::{
     wp::input_method::zv1::client::{
         zwp_input_method_context_v1,
         zwp_input_method_v1::{self, EVT_ACTIVATE_OPCODE},
-        zwp_input_panel_v1,
+        zwp_input_panel_surface_v1, zwp_input_panel_v1,
     },
     xdg::shell::client::{xdg_surface, xdg_toplevel, xdg_wm_base},
 };
@@ -48,10 +48,9 @@ struct AppState {
     context: Option<zwp_input_method_context_v1::ZwpInputMethodContextV1>,
     input_serial: u32,
     engine: Engine,
-    input_panel_surface: Option<wl_surface::WlSurface>,
+    surface: Option<wl_surface::WlSurface>,
     buffer: Option<wl_buffer::WlBuffer>,
-    wm_base: Option<xdg_wm_base::XdgWmBase>,
-    xdg_surface: Option<(xdg_surface::XdgSurface, xdg_toplevel::XdgToplevel)>,
+    input_panel_surface: Option<zwp_input_panel_surface_v1::ZwpInputPanelSurfaceV1>,
     configured: bool,
 }
 
@@ -72,13 +71,9 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
             match &interface[..] {
                 "wl_compositor" => {
                     let compositor =
-                        registry.bind::<wl_compositor::WlCompositor, _, _>(name, 1, qh, ());
+                        registry.bind::<wl_compositor::WlCompositor, _, _>(name, 6, qh, ());
                     let surface = compositor.create_surface(qh, ());
-                    state.input_panel_surface = Some(surface);
-
-                    if state.wm_base.is_some() && state.xdg_surface.is_none() {
-                        state.init_xdg_surface(qh);
-                    }
+                    state.surface = Some(surface);
                 }
                 "wl_shm" => {
                     let shm = registry.bind::<wl_shm::WlShm, _, _>(name, 1, qh, ());
@@ -100,28 +95,26 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
                     state.buffer = Some(buffer.clone());
 
                     if state.configured {
-                        let surface = state.input_panel_surface.as_ref().unwrap();
+                        let surface = state.surface.as_ref().unwrap();
                         surface.attach(Some(&buffer), 0, 0);
                         surface.commit();
                     }
                 }
-                "xdg_wm_base" => {
-                    let wm_base = registry.bind::<xdg_wm_base::XdgWmBase, _, _>(name, 1, qh, ());
-                    state.wm_base = Some(wm_base);
-
-                    if state.input_panel_surface.is_some() && state.xdg_surface.is_none() {
-                        state.init_xdg_surface(qh);
-                    }
-                }
-
                 "zwp_input_method_v1" => {
                     let input_method = registry
                         .bind::<zwp_input_method_v1::ZwpInputMethodV1, _, _>(name, 1, qh, ());
                     state.input_method = Some(input_method);
                 }
                 "zwp_input_panel_v1" => {
-                    let _input_panel =
+                    let input_panel =
                         registry.bind::<zwp_input_panel_v1::ZwpInputPanelV1, _, _>(name, 1, qh, ());
+                    if state.surface.is_some() && state.input_panel_surface.is_none() {
+                        let base_surface = state.surface.as_ref().unwrap();
+                        let input_panel_surface =
+                            input_panel.get_input_panel_surface(base_surface, qh, ());
+                        input_panel_surface.set_overlay_panel();
+                        state.input_panel_surface = Some(input_panel_surface);
+                    }
                 }
                 _ => {}
             }
@@ -151,20 +144,6 @@ fn draw(tmp: &mut File, (buf_x, buf_y): (u32, u32)) {
     buf.flush().unwrap();
 }
 
-impl AppState {
-    fn init_xdg_surface(&mut self, qh: &QueueHandle<AppState>) {
-        let wm_base = self.wm_base.as_ref().unwrap();
-        let base_surface = self.input_panel_surface.as_ref().unwrap();
-
-        let xdg_surface = wm_base.get_xdg_surface(base_surface, qh, ());
-        let toplevel = xdg_surface.get_toplevel(qh, ());
-
-        base_surface.commit();
-
-        self.xdg_surface = Some((xdg_surface, toplevel));
-    }
-}
-
 impl Dispatch<xdg_wm_base::XdgWmBase, ()> for AppState {
     fn event(
         _: &mut Self,
@@ -192,7 +171,7 @@ impl Dispatch<xdg_surface::XdgSurface, ()> for AppState {
         if let xdg_surface::Event::Configure { serial, .. } = event {
             xdg_surface.ack_configure(serial);
             state.configured = true;
-            let surface = state.input_panel_surface.as_ref().unwrap();
+            let surface = state.surface.as_ref().unwrap();
             if let Some(ref buffer) = state.buffer {
                 surface.attach(Some(buffer), 0, 0);
                 surface.commit();
@@ -346,5 +325,18 @@ impl Dispatch<zwp_input_panel_v1::ZwpInputPanelV1, ()> for AppState {
         _: &QueueHandle<Self>,
     ) {
         println!("input panel event");
+    }
+}
+
+impl Dispatch<zwp_input_panel_surface_v1::ZwpInputPanelSurfaceV1, ()> for AppState {
+    fn event(
+        state: &mut Self,
+        proxy: &zwp_input_panel_surface_v1::ZwpInputPanelSurfaceV1,
+        event: <zwp_input_panel_surface_v1::ZwpInputPanelSurfaceV1 as wayland_client::Proxy>::Event,
+        data: &(),
+        conn: &Connection,
+        qhandle: &QueueHandle<Self>,
+    ) {
+        println!("{:?}", event);
     }
 }
