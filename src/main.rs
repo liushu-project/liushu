@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::os::fd::AsFd;
 
-use liushu_core::engine::Engine;
+use liushu_core::engine::{Engine, InputMethodEngine};
 use wayland_client::{
     delegate_noop, event_created_child,
     protocol::{
@@ -71,7 +71,7 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
             match &interface[..] {
                 "wl_compositor" => {
                     let compositor =
-                        registry.bind::<wl_compositor::WlCompositor, _, _>(name, 6, qh, ());
+                        registry.bind::<wl_compositor::WlCompositor, _, _>(name, 5, qh, ());
                     let surface = compositor.create_surface(qh, ());
                     state.surface = Some(surface);
                 }
@@ -93,12 +93,6 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
                         (),
                     );
                     state.buffer = Some(buffer.clone());
-
-                    if state.configured {
-                        let surface = state.surface.as_ref().unwrap();
-                        surface.attach(Some(&buffer), 0, 0);
-                        surface.commit();
-                    }
                 }
                 "zwp_input_method_v1" => {
                     let input_method = registry
@@ -113,6 +107,7 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
                         let input_panel_surface =
                             input_panel.get_input_panel_surface(base_surface, qh, ());
                         input_panel_surface.set_overlay_panel();
+                        state.configured = true;
                         state.input_panel_surface = Some(input_panel_surface);
                     }
                 }
@@ -304,7 +299,17 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
                     53 => "/",
                     _ => "",
                 };
+                if key == 16 && state.configured {
+                    let surface = state.surface.as_ref().unwrap();
+                    if let Some(ref buffer) = state.buffer {
+                        surface.attach(Some(buffer), 0, 0);
+                        surface.commit();
+                    }
+                }
                 state.input.push_str(key_str);
+                if let Ok(res) = state.engine.search(&state.input) {
+                    println!("{:?}", res);
+                }
 
                 if let Some(context) = &state.context {
                     context.commit_string(state.input_serial, key_str.to_string());
