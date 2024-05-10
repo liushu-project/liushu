@@ -145,6 +145,7 @@ impl Dispatch<zwp_input_method_v1::ZwpInputMethodV1, ()> for AppState {
                 println!("grab keyboard");
             }
             zwp_input_method_v1::Event::Deactivate { context } => {
+                state.input.clear();
                 state.context = None;
                 context.destroy();
                 println!("method inactive");
