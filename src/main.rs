@@ -1,23 +1,12 @@
-use std::fs::File;
-use std::os::fd::AsFd;
-
-use liushu_core::engine::{Engine, InputMethodEngine};
+use liushu_core::engine::{candidates::Candidate, Engine, InputMethodEngine};
 use wayland_client::{
-    delegate_noop, event_created_child,
-    protocol::{
-        wl_buffer, wl_compositor,
-        wl_keyboard::{self, KeyState},
-        wl_registry, wl_shm, wl_shm_pool, wl_surface,
-    },
+    event_created_child,
+    protocol::{wl_keyboard, wl_registry},
     Connection, Dispatch, QueueHandle, WEnum,
 };
-use wayland_protocols::{
-    wp::input_method::zv1::client::{
-        zwp_input_method_context_v1,
-        zwp_input_method_v1::{self, EVT_ACTIVATE_OPCODE},
-        zwp_input_panel_surface_v1, zwp_input_panel_v1,
-    },
-    xdg::shell::client::{xdg_surface, xdg_toplevel, xdg_wm_base},
+use wayland_protocols::wp::input_method::zv1::client::{
+    zwp_input_method_context_v1,
+    zwp_input_method_v1::{self, EVT_ACTIVATE_OPCODE},
 };
 
 fn main() {
@@ -48,6 +37,7 @@ struct AppState {
     context: Option<zwp_input_method_context_v1::ZwpInputMethodContextV1>,
     input_serial: u32,
     engine: Engine,
+    candidates: Vec<Candidate>,
 }
 
 impl AppState {
@@ -96,7 +86,24 @@ impl AppState {
             ctx.preedit_string(self.input_serial, self.input.clone(), self.input.clone())
         });
         if let Ok(res) = self.engine.search(&self.input) {
-            println!("{:?}", res);
+            self.candidates = res;
+        }
+    }
+
+    pub fn commit(&mut self) {
+        match (
+            self.context.as_ref(),
+            self.candidates.get(0),
+            self.input.is_empty(),
+        ) {
+            (Some(ctx), Some(candidate), false) => {
+                ctx.commit_string(self.input_serial, candidate.text.to_string());
+                self.input.clear();
+            }
+            (Some(ctx), _, true) => {
+                ctx.commit_string(self.input_serial, " ".to_string());
+            }
+            _ => {}
         }
     }
 }
@@ -187,7 +194,7 @@ impl Dispatch<zwp_input_method_context_v1::ZwpInputMethodContextV1, ()> for AppS
 
 impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
     fn event(
-        state: &mut Self,
+        context: &mut Self,
         _proxy: &wl_keyboard::WlKeyboard,
         event: wl_keyboard::Event,
         _data: &(),
@@ -197,11 +204,28 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
         match event {
             wl_keyboard::Event::Key {
                 key,
-                state: WEnum::Value(KeyState::Pressed),
-                ..
-            } => {
-                state.feed_key(key);
-            }
+                state,
+                serial,
+                time,
+            } => match key {
+                16..=25 | 30..=38 | 44..=50 => {
+                    if state == WEnum::Value(wl_keyboard::KeyState::Pressed) {
+                        context.feed_key(key);
+                    }
+                }
+                57 => {
+                    if state == WEnum::Value(wl_keyboard::KeyState::Pressed) {
+                        println!("pressed space key");
+                        context.commit();
+                    }
+                }
+                _ => {
+                    context
+                        .context
+                        .as_ref()
+                        .map(|ctx| ctx.key(serial, time, key, state.into()));
+                }
+            },
             _ => {}
         }
     }
