@@ -23,7 +23,7 @@ fn main() {
     let dict_path = xdg_dirs.find_data_file("sunman.trie").unwrap();
     let mut state = AppState {
         running: true,
-        engine: Engine::new(&dict_path).expect("Open dict error"),
+        engine: Engine::new(dict_path).expect("Open dict error"),
         ..Default::default()
     };
 
@@ -85,9 +85,9 @@ impl AppState {
             _ => "",
         };
         self.input.push_str(key_str);
-        self.context.as_ref().map(|ctx| {
+        if let Some(ctx) = self.context.as_ref() {
             ctx.preedit_string(self.input_serial, self.input.clone(), self.input.clone())
-        });
+        }
         if let Ok(res) = self.engine.search(&self.input) {
             self.candidates = res;
         }
@@ -96,7 +96,7 @@ impl AppState {
     pub fn commit(&mut self) {
         match (
             self.context.as_ref(),
-            self.candidates.get(0),
+            self.candidates.first(),
             self.input.is_empty(),
         ) {
             (Some(ctx), Some(candidate), false) => {
@@ -124,14 +124,10 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppState {
             name, interface, ..
         } = event
         {
-            println!("{} {}", name, interface);
-            match &interface[..] {
-                "zwp_input_method_v1" => {
-                    let input_method = registry
-                        .bind::<zwp_input_method_v1::ZwpInputMethodV1, _, _>(name, 1, qh, ());
-                    state.input_method = Some(input_method);
-                }
-                _ => {}
+            if &interface[..] == "zwp_input_method_v1" {
+                let input_method =
+                    registry.bind::<zwp_input_method_v1::ZwpInputMethodV1, _, _>(name, 1, qh, ());
+                state.input_method = Some(input_method);
             }
         }
     }
@@ -205,6 +201,12 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
         _qhandle: &QueueHandle<Self>,
     ) {
         match event {
+            wl_keyboard::Event::Enter { .. } => {
+                println!("enter");
+            }
+            wl_keyboard::Event::Leave { .. } => {
+                println!("leave");
+            }
             wl_keyboard::Event::Key {
                 key,
                 state,
@@ -222,10 +224,9 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
                     }
                 }
                 _ => {
-                    context
-                        .context
-                        .as_ref()
-                        .map(|ctx| ctx.key(serial, time, key, state.into()));
+                    if let Some(ctx) = context.context.as_ref() {
+                        ctx.key(serial, time, key, state.into())
+                    }
                 }
             },
             _ => {}
