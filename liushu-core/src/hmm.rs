@@ -85,9 +85,7 @@ fn count_trans_prob(corpus_file: impl AsRef<Path>, db: &Database) -> Result<(), 
         sentence.push("END".to_string());
 
         for (word1, word2) in sentence.iter().zip(sentence.iter().skip(1)) {
-            let trans_prop = trans_map
-                .entry(word1.to_string())
-                .or_insert_with(HashMap::new);
+            let trans_prop = trans_map.entry(word1.to_string()).or_default();
             let next_prob = trans_prop.entry(word2.to_string()).or_insert(0);
             *next_prob += 1;
 
@@ -135,9 +133,7 @@ fn count_emiss_prob(corpus_file: impl AsRef<Path>, db: &Database) -> Result<(), 
             .map(|p| p.to_string())
             .collect::<Vec<String>>();
         for (word, py) in sentence.iter().zip(pinyin) {
-            let emit_prop = emit_map
-                .entry(word.to_string())
-                .or_insert_with(HashMap::new);
+            let emit_prop = emit_map.entry(word.to_string()).or_default();
             let py_prob = emit_prop.entry(py).or_insert(0);
             *py_prob += 1;
         }

@@ -4,7 +4,7 @@ pub mod translator;
 
 use std::{fs::File, path::Path};
 
-use crate::{dict::Dictionary, dirs::MyProjectDirs, error::LiushuError};
+use crate::{dict::Dictionary, error::LiushuError};
 
 use self::{candidates::Candidate, segmentor::Segmentor, translator::Translator};
 
@@ -12,7 +12,7 @@ pub trait InputMethodEngine {
     fn search(&self, code: &str) -> Result<Vec<Candidate>, LiushuError>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Engine {
     trie: Dictionary,
 }
@@ -20,13 +20,6 @@ pub struct Engine {
 impl Engine {
     pub fn new(dict_path: impl AsRef<Path>) -> Result<Self, LiushuError> {
         let trie: Dictionary = bincode::deserialize_from(File::open(dict_path)?)?;
-
-        Ok(Self { trie })
-    }
-
-    pub fn init(proj_dirs: &MyProjectDirs) -> Result<Self, LiushuError> {
-        let trie: Dictionary =
-            bincode::deserialize_from(File::open(proj_dirs.target_dir.join("sunman.trie"))?)?;
 
         Ok(Self { trie })
     }
