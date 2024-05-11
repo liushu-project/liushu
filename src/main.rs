@@ -8,6 +8,7 @@ use wayland_protocols::wp::input_method::zv1::client::{
     zwp_input_method_context_v1,
     zwp_input_method_v1::{self, EVT_ACTIVATE_OPCODE},
 };
+use xdg::BaseDirectories;
 
 fn main() {
     let conn = Connection::connect_to_env().unwrap();
@@ -18,9 +19,11 @@ fn main() {
     let display = conn.display();
     display.get_registry(&qhandle, ());
 
+    let xdg_dirs = BaseDirectories::with_prefix("liushu").unwrap();
+    let dict_path = xdg_dirs.find_data_file("sunman.trie").unwrap();
     let mut state = AppState {
         running: true,
-        engine: Engine::new("/home/elliot/.config/liushu/sunman.trie").expect("Open dict error"),
+        engine: Engine::new(&dict_path).expect("Open dict error"),
         ..Default::default()
     };
 
@@ -215,7 +218,6 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
                 }
                 57 => {
                     if state == WEnum::Value(wl_keyboard::KeyState::Pressed) {
-                        println!("pressed space key");
                         context.commit();
                     }
                 }
