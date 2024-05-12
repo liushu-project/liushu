@@ -1,8 +1,11 @@
+mod keyboard;
+
+use keyboard::KeyboardProcessorResponse;
 use liushu_core::engine::{candidates::Candidate, Engine, InputMethodEngine};
 use wayland_client::{
     event_created_child,
     protocol::{wl_keyboard, wl_registry},
-    Connection, Dispatch, QueueHandle, WEnum,
+    Connection, Dispatch, QueueHandle,
 };
 use wayland_protocols::wp::input_method::zv1::client::{
     zwp_input_method_context_v1,
@@ -41,70 +44,80 @@ struct AppState {
     input_serial: u32,
     engine: Engine,
     candidates: Vec<Candidate>,
+    keyboard_processor: keyboard::KeyboardProcessor,
 }
 
 impl AppState {
-    pub fn feed_key(&mut self, key: u32) {
-        let key_str = match key {
-            16 => "q",
-            17 => "w",
-            18 => "e",
-            19 => "r",
-            20 => "t",
-            21 => "y",
-            22 => "u",
-            23 => "i",
-            24 => "o",
-            25 => "p",
-            26 => "[",
-            27 => "]",
-            28 => "\n",
-            30 => "a",
-            31 => "s",
-            32 => "d",
-            33 => "f",
-            34 => "g",
-            35 => "h",
-            36 => "j",
-            37 => "k",
-            38 => "l",
-            39 => ";",
-            40 => "'",
-            41 => "`",
-            42 => "\\",
-            44 => "z",
-            45 => "x",
-            46 => "c",
-            47 => "v",
-            48 => "b",
-            49 => "n",
-            50 => "m",
-            51 => ",",
-            52 => ".",
-            53 => "/",
-            _ => "",
-        };
-        self.input.push_str(key_str);
-        if let Some(ctx) = self.context.as_ref() {
-            ctx.preedit_string(self.input_serial, self.input.clone(), self.input.clone())
-        }
-        if let Ok(res) = self.engine.search(&self.input) {
-            self.candidates = res;
-        }
-    }
-
-    pub fn commit(&mut self) {
-        match (
-            self.context.as_ref(),
-            self.candidates.first(),
-            self.input.is_empty(),
-        ) {
-            (Some(ctx), Some(candidate), false) => {
-                ctx.commit_string(self.input_serial, candidate.text.to_string());
-                self.input.clear();
+    pub fn process(&mut self, event: wl_keyboard::Event) {
+        match event {
+            wl_keyboard::Event::Enter { .. } => {
+                println!("enter");
             }
-            (Some(ctx), _, true) => {
-                ctx.commit_string(self.input_serial, " ".to_string());
+            wl_keyboard::Event::Leave { .. } => {
+                println!("leave");
+            }
+            wl_keyboard::Event::Key {
+                serial,
+                time,
+                key,
+                state,
+            } => {
+                let (_, response) = self.keyboard_processor.handle_event(event);
+                match (response, self.context.as_ref()) {
+                    (KeyboardProcessorResponse::Handled, _) => {}
+                    (KeyboardProcessorResponse::Commit, Some(ctx)) => {
+                        if self.input.is_empty() {
+                            ctx.commit_string(self.input_serial, " ".to_string());
+                        } else if !self.candidates.is_empty() {
+                            ctx.commit_string(self.input_serial, self.candidates[0].text.clone());
+                            self.input.clear();
+                        }
+                    }
+                    (KeyboardProcessorResponse::Composing, Some(ctx)) => {
+                        let key_str = match key {
+                            16 => "q",
+                            17 => "w",
+                            18 => "e",
+                            19 => "r",
+                            20 => "t",
+                            21 => "y",
+                            22 => "u",
+                            23 => "i",
+                            24 => "o",
+                            25 => "p",
+                            30 => "a",
+                            31 => "s",
+                            32 => "d",
+                            33 => "f",
+                            34 => "g",
+                            35 => "h",
+                            36 => "j",
+                            37 => "k",
+                            38 => "l",
+                            44 => "z",
+                            45 => "x",
+                            46 => "c",
+                            47 => "v",
+                            48 => "b",
+                            49 => "n",
+                            50 => "m",
+                            _ => "",
+                        };
+                        self.input.push_str(key_str);
+                        ctx.preedit_string(
+                            self.input_serial,
+                            self.input.clone(),
+                            self.input.clone(),
+                        );
+                        if let Ok(res) = self.engine.search(&self.input) {
+                            self.candidates = res;
+                        }
+                    }
+                    (KeyboardProcessorResponse::Unhandled, Some(ctx)) => {
+                        ctx.key(serial, time, key, state.into());
+                    }
+                    (_, None) => {}
+                }
             }
             _ => {}
         }
@@ -193,43 +206,13 @@ impl Dispatch<zwp_input_method_context_v1::ZwpInputMethodContextV1, ()> for AppS
 
 impl Dispatch<wl_keyboard::WlKeyboard, ()> for AppState {
     fn event(
-        context: &mut Self,
+        state: &mut Self,
         _proxy: &wl_keyboard::WlKeyboard,
         event: wl_keyboard::Event,
         _data: &(),
         _conn: &Connection,
         _qhandle: &QueueHandle<Self>,
     ) {
-        match event {
-            wl_keyboard::Event::Enter { .. } => {
-                println!("enter");
-            }
-            wl_keyboard::Event::Leave { .. } => {
-                println!("leave");
-            }
-            wl_keyboard::Event::Key {
-                key,
-                state,
-                serial,
-                time,
-            } => match key {
-                16..=25 | 30..=38 | 44..=50 => {
-                    if state == WEnum::Value(wl_keyboard::KeyState::Pressed) {
-                        context.feed_key(key);
-                    }
-                }
-                57 => {
-                    if state == WEnum::Value(wl_keyboard::KeyState::Pressed) {
-                        context.commit();
-                    }
-                }
-                _ => {
-                    if let Some(ctx) = context.context.as_ref() {
-                        ctx.key(serial, time, key, state.into())
-                    }
-                }
-            },
-            _ => {}
-        }
+        state.process(event);
     }
 }
