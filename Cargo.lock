@@ -380,12 +380,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fastrand"
-version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "658bd65b1cf4c852a3cc96f18a8ce7b5640f6b703f905c7d74532294c2a63984"
-
-[[package]]
 name = "fs-err"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -500,7 +494,6 @@ name = "liushu"
 version = "0.1.0"
 dependencies = [
  "liushu-core",
- "tempfile",
  "wayland-client",
  "wayland-protocols",
  "xdg",
@@ -873,18 +866,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "tempfile"
-version = "3.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85b77fafb263dd9d05cbeac119526425676db3784113aa9295c88498cbf8bff1"
-dependencies = [
- "cfg-if",
- "fastrand",
- "rustix",
- "windows-sys",
 ]
 
 [[package]]
