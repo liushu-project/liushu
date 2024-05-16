@@ -64,7 +64,7 @@ impl AppState {
             } => {
                 let (_, response) = self.keyboard_processor.handle_event(event);
                 match (response, self.context.as_ref()) {
-                    (KeyboardProcessorResponse::Handled, _) => {}
+                    (KeyboardProcessorResponse::Ignored, _) => {}
                     (KeyboardProcessorResponse::Commit, Some(ctx)) => {
                         if self.input.is_empty() {
                             ctx.commit_string(self.input_serial, " ".to_string());

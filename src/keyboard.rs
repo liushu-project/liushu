@@ -29,7 +29,7 @@ impl KeyboardProcessor {
                 WEnum::Value(wl_keyboard::KeyState::Released) => {
                     if self.handled_keys.contains(&key) {
                         self.handled_keys.remove(&key);
-                        KeyboardProcessorResponse::Handled
+                        KeyboardProcessorResponse::Ignored
                     } else {
                         KeyboardProcessorResponse::Unhandled
                     }
@@ -45,6 +45,6 @@ impl KeyboardProcessor {
 pub enum KeyboardProcessorResponse {
     Composing,
     Commit,
-    Handled,
+    Ignored,
     Unhandled,
 }
