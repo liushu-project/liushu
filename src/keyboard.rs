@@ -8,11 +8,8 @@ pub struct KeyboardProcessor {
 }
 
 impl KeyboardProcessor {
-    pub fn handle_event(
-        &mut self,
-        event: wl_keyboard::Event,
-    ) -> (wl_keyboard::Event, KeyboardProcessorResponse) {
-        let response = match event {
+    pub fn handle_event(&mut self, event: wl_keyboard::Event) -> KeyboardProcessorResponse {
+        match event {
             wl_keyboard::Event::Key { key, state, .. } => match state {
                 WEnum::Value(wl_keyboard::KeyState::Pressed) => match key {
                     // a-z
@@ -24,21 +21,20 @@ impl KeyboardProcessor {
                         self.handled_keys.insert(key);
                         KeyboardProcessorResponse::Commit
                     }
-                    _ => KeyboardProcessorResponse::Unhandled,
+                    _ => KeyboardProcessorResponse::Unhandled(event),
                 },
                 WEnum::Value(wl_keyboard::KeyState::Released) => {
                     if self.handled_keys.contains(&key) {
                         self.handled_keys.remove(&key);
                         KeyboardProcessorResponse::Ignored
                     } else {
-                        KeyboardProcessorResponse::Unhandled
+                        KeyboardProcessorResponse::Unhandled(event)
                     }
                 }
-                _ => KeyboardProcessorResponse::Unhandled,
+                _ => KeyboardProcessorResponse::Unhandled(event),
             },
-            _ => KeyboardProcessorResponse::Unhandled,
-        };
-        (event, response)
+            _ => KeyboardProcessorResponse::Unhandled(event),
+        }
     }
 }
 
@@ -46,5 +42,5 @@ pub enum KeyboardProcessorResponse {
     Composing,
     Commit,
     Ignored,
-    Unhandled,
+    Unhandled(wl_keyboard::Event),
 }

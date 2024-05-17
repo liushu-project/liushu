@@ -62,7 +62,7 @@ impl AppState {
                 key,
                 state,
             } => {
-                let (_, response) = self.keyboard_processor.handle_event(event);
+                let response = self.keyboard_processor.handle_event(event);
                 match (response, self.context.as_ref()) {
                     (KeyboardProcessorResponse::Ignored, _) => {}
                     (KeyboardProcessorResponse::Commit, Some(ctx)) => {
@@ -113,7 +113,7 @@ impl AppState {
                             self.candidates = res;
                         }
                     }
-                    (KeyboardProcessorResponse::Unhandled, Some(ctx)) => {
+                    (KeyboardProcessorResponse::Unhandled(_), Some(ctx)) => {
                         ctx.key(serial, time, key, state.into());
                     }
                     (_, None) => {}
