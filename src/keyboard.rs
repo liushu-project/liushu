@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use liushu_core::engine::candidates::Candidate;
 use wayland_client::{protocol::wl_keyboard, WEnum};
 
 #[derive(Debug, Default)]
@@ -15,7 +16,7 @@ impl KeyboardProcessor {
                     // a-z
                     16..=25 | 30..=38 | 44..=50 => {
                         self.handled_keys.insert(key);
-                        KeyboardProcessorResponse::Composing
+                        KeyboardProcessorResponse::Composing(key)
                     }
                     57 => {
                         self.handled_keys.insert(key);
@@ -39,8 +40,9 @@ impl KeyboardProcessor {
 }
 
 pub enum KeyboardProcessorResponse {
-    Composing,
+    Composing(u32),
     Commit,
     Ignored,
     Unhandled(wl_keyboard::Event),
+    Result(String, Vec<Candidate>),
 }

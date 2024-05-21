@@ -1,7 +1,9 @@
+mod composor;
 mod keyboard;
 
+use composor::Composor;
 use keyboard::KeyboardProcessorResponse;
-use liushu_core::engine::{candidates::Candidate, Engine, InputMethodEngine};
+use liushu_core::engine::{candidates::Candidate, Engine};
 use wayland_client::{
     event_created_child,
     protocol::{wl_keyboard, wl_registry},
@@ -24,9 +26,11 @@ fn main() {
 
     let xdg_dirs = BaseDirectories::with_prefix("liushu").unwrap();
     let dict_path = xdg_dirs.find_data_file("sunman.trie").unwrap();
+    let engine = Engine::new(dict_path).expect("Open dict error");
+    let composor = Composor::with_engine(engine);
     let mut state = AppState {
         running: true,
-        engine: Engine::new(dict_path).expect("Open dict error"),
+        composor,
         ..Default::default()
     };
 
@@ -42,8 +46,8 @@ struct AppState {
     input_method: Option<zwp_input_method_v1::ZwpInputMethodV1>,
     context: Option<zwp_input_method_context_v1::ZwpInputMethodContextV1>,
     input_serial: u32,
-    engine: Engine,
     candidates: Vec<Candidate>,
+    composor: Composor,
     keyboard_processor: keyboard::KeyboardProcessor,
 }
 
@@ -62,61 +66,32 @@ impl AppState {
                 key,
                 state,
             } => {
-                let response = self.keyboard_processor.handle_event(event);
+                let response = self
+                    .composor
+                    .process(self.keyboard_processor.handle_event(event));
                 match (response, self.context.as_ref()) {
-                    (KeyboardProcessorResponse::Ignored, _) => {}
                     (KeyboardProcessorResponse::Commit, Some(ctx)) => {
                         if self.input.is_empty() {
                             ctx.commit_string(self.input_serial, " ".to_string());
                         } else if !self.candidates.is_empty() {
                             ctx.commit_string(self.input_serial, self.candidates[0].text.clone());
                             self.input.clear();
+                            self.composor.clear();
                         }
                     }
-                    (KeyboardProcessorResponse::Composing, Some(ctx)) => {
-                        let key_str = match key {
-                            16 => "q",
-                            17 => "w",
-                            18 => "e",
-                            19 => "r",
-                            20 => "t",
-                            21 => "y",
-                            22 => "u",
-                            23 => "i",
-                            24 => "o",
-                            25 => "p",
-                            30 => "a",
-                            31 => "s",
-                            32 => "d",
-                            33 => "f",
-                            34 => "g",
-                            35 => "h",
-                            36 => "j",
-                            37 => "k",
-                            38 => "l",
-                            44 => "z",
-                            45 => "x",
-                            46 => "c",
-                            47 => "v",
-                            48 => "b",
-                            49 => "n",
-                            50 => "m",
-                            _ => "",
-                        };
-                        self.input.push_str(key_str);
+                    (KeyboardProcessorResponse::Result(input, candidates), Some(ctx)) => {
+                        self.input = input;
+                        self.candidates = candidates;
                         ctx.preedit_string(
                             self.input_serial,
                             self.input.clone(),
                             self.input.clone(),
                         );
-                        if let Ok(res) = self.engine.search(&self.input) {
-                            self.candidates = res;
-                        }
                     }
                     (KeyboardProcessorResponse::Unhandled(_), Some(ctx)) => {
                         ctx.key(serial, time, key, state.into());
                     }
-                    (_, None) => {}
+                    _ => {}
                 }
             }
             _ => {}
