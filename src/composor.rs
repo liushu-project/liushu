@@ -42,6 +42,14 @@ impl Composor {
                             data
                         }
                     }
+                    28 => {
+                        if self.input.is_empty() {
+                            data
+                        } else {
+                            self.handled_keys.insert(key);
+                            KeyboardProcessorResponse::DirectlyCommit
+                        }
+                    }
                     _ => data,
                 },
                 WEnum::Value(wl_keyboard::KeyState::Released) => {

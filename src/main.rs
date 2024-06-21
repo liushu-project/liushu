@@ -79,6 +79,11 @@ impl AppState {
                             self.composor.clear();
                         }
                     }
+                    (KeyboardProcessorResponse::DirectlyCommit, Some(ctx)) => {
+                        ctx.commit_string(self.input_serial, self.input.clone());
+                        self.input.clear();
+                        self.composor.clear();
+                    }
                     (KeyboardProcessorResponse::Result(input, candidates), Some(ctx)) => {
                         self.input = input;
                         self.candidates = candidates;

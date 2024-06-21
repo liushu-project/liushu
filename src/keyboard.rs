@@ -41,6 +41,7 @@ impl KeyboardProcessor {
 
 pub enum KeyboardProcessorResponse {
     Composing(u32),
+    DirectlyCommit,
     Commit,
     Ignored,
     Unhandled(wl_keyboard::Event),
