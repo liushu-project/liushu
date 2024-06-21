@@ -49,6 +49,7 @@ struct AppState {
     candidates: Vec<Candidate>,
     composor: Composor,
     keyboard_processor: keyboard::KeyboardProcessor,
+    is_ascii_mode: bool,
 }
 
 impl AppState {
@@ -66,9 +67,10 @@ impl AppState {
                 key,
                 state,
             } => {
-                let response = self
-                    .composor
-                    .process(self.keyboard_processor.handle_event(event));
+                let response = self.composor.process(
+                    self.keyboard_processor
+                        .handle_event(event, self.is_ascii_mode),
+                );
                 match (response, self.context.as_ref()) {
                     (KeyboardProcessorResponse::Commit, Some(ctx)) => {
                         if self.input.is_empty() {
@@ -95,6 +97,9 @@ impl AppState {
                     }
                     (KeyboardProcessorResponse::Unhandled(_), Some(ctx)) => {
                         ctx.key(serial, time, key, state.into());
+                    }
+                    (KeyboardProcessorResponse::Toggle, _) => {
+                        self.is_ascii_mode = !self.is_ascii_mode;
                     }
                     _ => {}
                 }

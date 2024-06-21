@@ -9,7 +9,23 @@ pub struct KeyboardProcessor {
 }
 
 impl KeyboardProcessor {
-    pub fn handle_event(&mut self, event: wl_keyboard::Event) -> KeyboardProcessorResponse {
+    pub fn handle_event(
+        &mut self,
+        event: wl_keyboard::Event,
+        is_ascii_mode: bool,
+    ) -> KeyboardProcessorResponse {
+        if is_ascii_mode {
+            if let wl_keyboard::Event::Key {
+                key: 42 | 54,
+                state: WEnum::Value(wl_keyboard::KeyState::Pressed),
+                ..
+            } = event
+            {
+                return KeyboardProcessorResponse::Toggle;
+            } else {
+                return KeyboardProcessorResponse::Unhandled(event);
+            }
+        }
         match event {
             wl_keyboard::Event::Key { key, state, .. } => match state {
                 WEnum::Value(wl_keyboard::KeyState::Pressed) => match key {
@@ -17,6 +33,10 @@ impl KeyboardProcessor {
                     16..=25 | 30..=38 | 44..=50 => {
                         self.handled_keys.insert(key);
                         KeyboardProcessorResponse::Composing(key)
+                    }
+                    42 | 54 => {
+                        self.handled_keys.insert(key);
+                        KeyboardProcessorResponse::Toggle
                     }
                     57 => {
                         self.handled_keys.insert(key);
@@ -43,6 +63,7 @@ pub enum KeyboardProcessorResponse {
     Composing(u32),
     DirectlyCommit,
     Commit,
+    Toggle,
     Ignored,
     Unhandled(wl_keyboard::Event),
     Result(String, Vec<Candidate>),
